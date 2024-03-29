@@ -31,6 +31,26 @@ public class Game {
     protected final int cols;
 
     /**
+     * User score
+     */
+    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(0);
+
+    /**
+     * Score multiplier
+     */
+    private final SimpleIntegerProperty scoreMultiplier = new SimpleIntegerProperty(1);
+
+    /**
+     * What level the user is on
+     */
+    private final SimpleIntegerProperty gameLevel = new SimpleIntegerProperty(0);
+
+    /**
+     * How many lives the user has left
+     */
+    private final SimpleIntegerProperty livesRemaining = new SimpleIntegerProperty(3);
+
+    /**
      * The grid model linked to the game
      */
     protected final Grid grid;
@@ -186,6 +206,38 @@ public class Game {
      */
     public int getRows() {
         return rows;
+    }
+
+    /**
+     * Get the user's current score
+     * @return user's current score
+     */
+    public SimpleIntegerProperty getUserScore() {
+        return userScore;
+    }
+
+    /**
+     * Get the current game level
+     * @return current game level
+     */
+    public SimpleIntegerProperty getGameLevel() {
+        return gameLevel;
+    }
+
+    /**
+     * Get the current score multiplier
+     * @return current score multiplier
+     */
+    public SimpleIntegerProperty getScoreMultiplier() {
+        return scoreMultiplier;
+    }
+
+    /**
+     * Get number of lives user has remaining
+      * @return number of lives user has remaining
+     */
+    public SimpleIntegerProperty getLivesRemaining() {
+        return livesRemaining;
     }
 
 
