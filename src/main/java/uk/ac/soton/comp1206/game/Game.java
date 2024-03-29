@@ -1,5 +1,6 @@
 package uk.ac.soton.comp1206.game;
 
+import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
@@ -11,6 +12,8 @@ import uk.ac.soton.comp1206.component.GameBlock;
 public class Game {
 
     private static final Logger logger = LogManager.getLogger(Game.class);
+
+    private Random random = new Random();
 
     /**
      * Number of rows
@@ -26,6 +29,7 @@ public class Game {
      * The grid model linked to the game
      */
     protected final Grid grid;
+    private GamePiece currentPiece;
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
@@ -53,6 +57,29 @@ public class Game {
      */
     public void initialiseGame() {
         logger.info("Initialising game");
+        nextPiece();
+    }
+
+    /**
+     * Updates currentPiece to a new randomly generated piece
+     * @return updated currentPiece
+     */
+    public GamePiece nextPiece() {
+        currentPiece = spawnPiece();
+        logger.info("The next piece is: {}", currentPiece);
+        return currentPiece;
+    }
+
+    /**
+     * Generates a new random piece
+     * @return randomly-generated piece
+     */
+    public GamePiece spawnPiece() {
+        int maxPieces = GamePiece.PIECES;
+        int randomPiece = random.nextInt(maxPieces);
+        logger.info("Picking random piece: {}", randomPiece);
+        var piece = GamePiece.createPiece(randomPiece);
+        return piece;
     }
 
     /**
@@ -64,15 +91,13 @@ public class Game {
         int x = gameBlock.getX();
         int y = gameBlock.getY();
 
-        //Get the new value for this block
-        int previousValue = grid.get(x,y);
-        int newValue = previousValue + 1;
-        if (newValue  > GamePiece.PIECES) {
-            newValue = 0;
+        if (grid.canPlayPiece(currentPiece, x, y)) {
+            // Can play the piece
+            grid.playPiece(currentPiece, x, y);
+            nextPiece();
+        } else {
+            // Can't play the piece
         }
-
-        //Update the grid with the new value
-        grid.set(x,y,newValue);
     }
 
     /**

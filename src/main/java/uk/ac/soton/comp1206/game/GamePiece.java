@@ -1,5 +1,8 @@
 package uk.ac.soton.comp1206.game;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Instances of GamePiece Represents the model of a specific Game Piece with it's block makeup.
  *
@@ -7,6 +10,8 @@ package uk.ac.soton.comp1206.game;
  * number.
  */
 public class GamePiece {
+
+    private static final Logger logger = LogManager.getLogger(GamePiece.class);
 
     /**
      * The total number of pieces in this game
@@ -191,7 +196,7 @@ public class GamePiece {
     }
 
     /**
-     * Rotate this piece exactly once by rotating it's 3x3 grid
+     * Rotate this piece exactly once by rotating its 3x3 grid
      */
     public void rotate() {
         int[][] rotated = new int[blocks.length][blocks[0].length];

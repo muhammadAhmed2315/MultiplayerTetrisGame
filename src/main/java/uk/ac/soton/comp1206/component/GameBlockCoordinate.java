@@ -1,6 +1,8 @@
 package uk.ac.soton.comp1206.component;
 
 import javafx.beans.NamedArg;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Represents a row and column representation of a block in the grid. Holds the x (column) and y (row).
@@ -8,6 +10,8 @@ import javafx.beans.NamedArg;
  * Useful for use in a set or list or other form of collection.
  */
 public class GameBlockCoordinate {
+
+    private static final Logger logger = LogManager.getLogger(GameBlockCoordinate.class);
 
     /**
      * Represents the column

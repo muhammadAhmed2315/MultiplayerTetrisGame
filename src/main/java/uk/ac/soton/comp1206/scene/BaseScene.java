@@ -2,6 +2,9 @@ package uk.ac.soton.comp1206.scene;
 
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -9,6 +12,8 @@ import uk.ac.soton.comp1206.ui.GameWindow;
  * A Base Scene used in the game. Handles common functionality between all scenes.
  */
 public abstract class BaseScene {
+
+    private static final Logger logger = LogManager.getLogger(BaseScene.class);
 
     protected final GameWindow gameWindow;
 

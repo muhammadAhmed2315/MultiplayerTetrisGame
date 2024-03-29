@@ -181,4 +181,12 @@ public class GameBlock extends Canvas {
         value.bind(input);
     }
 
+    @Override
+    public String toString() {
+        return "GameBlock{" +
+            "x=" + x +
+            ", y=" + y +
+            ", value=" + value.get() +
+            '}';
+    }
 }
