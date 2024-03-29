@@ -1,9 +1,14 @@
 package uk.ac.soton.comp1206.game;
 
+import java.util.HashSet;
 import java.util.Random;
+import javafx.animation.PauseTransition;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
+import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -61,6 +66,64 @@ public class Game {
     }
 
     /**
+     * Handles line clearing logic
+     */
+    public void afterPiece() {
+        // loop through rows
+        HashSet<GameBlockCoordinate> blocksToBeCleared = new HashSet<>();
+        int lineCounter = 0;
+        // looking for horizontal lines
+        for (int i = 0; i < rows; i++) {
+            int rowSum = 0;
+            for (int j = 0; j < cols; j++) {
+                if (grid.get(i, j) > 0) {
+                    rowSum++;
+                }
+            }
+            // if a line is found
+            if (rowSum >= 5) {
+                blocksToBeCleared.add(new GameBlockCoordinate(i, 0));
+                blocksToBeCleared.add(new GameBlockCoordinate(i, 1));
+                blocksToBeCleared.add(new GameBlockCoordinate(i, 2));
+                blocksToBeCleared.add(new GameBlockCoordinate(i, 3));
+                blocksToBeCleared.add(new GameBlockCoordinate(i, 4));
+                lineCounter++;
+            }
+        }
+        // looking for vertical lines
+        for (int i = 0; i < rows; i++) {
+            int colSum = 0;
+            for (int j = 0; j < cols; j++) {
+                if (grid.get(j, i) > 0) {
+                    colSum++;
+                }
+            }
+            // if a line is found
+            if (colSum >= 5) {
+                blocksToBeCleared.add(new GameBlockCoordinate(0, i));
+                blocksToBeCleared.add(new GameBlockCoordinate(1, i));
+                blocksToBeCleared.add(new GameBlockCoordinate(2, i));
+                blocksToBeCleared.add(new GameBlockCoordinate(3, i));
+                blocksToBeCleared.add(new GameBlockCoordinate(4, i));
+                lineCounter++;
+            }
+        }
+        logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
+        // Clear the lines
+        if (!blocksToBeCleared.isEmpty()) {
+            // Pause for 2 seconds before clearing the lines
+            PauseTransition pause = new PauseTransition(Duration.seconds(1));
+            pause.setOnFinished(event -> {
+                // Clear the lines
+                for (GameBlockCoordinate x : blocksToBeCleared) {
+                    grid.set(x.getX(), x.getY(), 0);
+                }
+            });
+            pause.play();
+        }
+    }
+
+    /**
      * Updates currentPiece to a new randomly generated piece
      * @return updated currentPiece
      */
@@ -95,6 +158,7 @@ public class Game {
             // Can play the piece
             grid.playPiece(currentPiece, x, y);
             nextPiece();
+            afterPiece();
         } else {
             // Can't play the piece
         }
