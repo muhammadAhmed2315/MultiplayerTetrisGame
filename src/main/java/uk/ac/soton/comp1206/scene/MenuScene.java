@@ -62,7 +62,7 @@ public class MenuScene extends BaseScene {
         //Bind the button actions to the necessary methods
         singlePlayerButton.setOnAction(this::startGame);
         // TODO: multiplayer button
-        // TODO: instruction button
+        instructionsButton.setOnAction(this::startInstructionScene);
         exitButton.setOnAction((event) -> Platform.exit());
 
         VBox buttonsList = new VBox(singlePlayerButton, multiPlayerButton, instructionsButton, exitButton);
@@ -96,6 +96,10 @@ public class MenuScene extends BaseScene {
      */
     private void startGame(ActionEvent event) {
         gameWindow.startChallenge();
+    }
+
+    private void startInstructionScene(ActionEvent event) {
+        gameWindow.startInstructions();
     }
 
 }
