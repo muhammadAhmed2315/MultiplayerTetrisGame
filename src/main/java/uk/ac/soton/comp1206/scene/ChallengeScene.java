@@ -17,6 +17,7 @@ import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
+import uk.ac.soton.comp1206.utility.Multimedia;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -110,6 +111,17 @@ public class ChallengeScene extends BaseScene {
 
         //Handle block on gameboard grid being clicked
         board.setOnBlockClick(this::blockClicked);
+
+        // If other background music is playing (e.g., menu background music)
+        if (Multimedia.getMusicPlayer() != null) {
+            Multimedia.getMusicPlayer().stop();
+            // Play intro game music, and then the actual game music
+            Multimedia.playBackgroundMusic("game_start.wav");
+            Multimedia.getMusicPlayer().setOnEndOfMedia(() -> {
+                Multimedia.getMusicPlayer().stop();
+                Multimedia.playBackgroundMusic("game.wav");
+            });
+        }
     }
 
     /**

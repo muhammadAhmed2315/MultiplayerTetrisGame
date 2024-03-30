@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
+import uk.ac.soton.comp1206.utility.Multimedia;
 
 /**
  * The main menu of the game. Provides a gateway to the rest of the game.
@@ -54,6 +55,16 @@ public class MenuScene extends BaseScene {
 
         //Bind the button action to the startGame method in the menu
         button.setOnAction(this::startGame);
+
+        // If other background music is already playing
+        if (Multimedia.getMusicPlayer() != null) {
+            Multimedia.getMusicPlayer().stop();
+            Multimedia.playBackgroundMusic("menu.mp3");
+        } else {
+            // No background music is playing (when game is first booted up)
+            Multimedia.playBackgroundMusic("menu.mp3");
+        }
+
     }
 
     /**
