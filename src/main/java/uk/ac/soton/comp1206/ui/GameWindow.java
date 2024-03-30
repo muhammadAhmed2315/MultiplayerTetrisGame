@@ -88,7 +88,7 @@ public class GameWindow {
     /**
      * Display the instructions screen
      */
-    public void startInstructions() { loadScene(new InstructionScene(this)); }
+    public void startInstructions() { loadScene(new InstructionsScene(this)); }
 
     /**
      * Setup the default settings for the stage itself (the window), such as the title and minimum width and height.

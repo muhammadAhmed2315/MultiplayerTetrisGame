@@ -3,6 +3,7 @@ package uk.ac.soton.comp1206.scene;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -146,12 +147,34 @@ public class ChallengeScene extends BaseScene {
     }
 
     /**
+     * Cleanup code before the game is ended
+     */
+    public void endGame() {
+        logger.info("Ending the game");
+        // TODO is this enough?
+        game = null;
+    }
+
+    /**
      * Initialise the scene and start the game
      */
     @Override
     public void initialise() {
         logger.info("Initialising Challenge");
         game.start();
+
+        // Add keyboard listener to the scene
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            switch (event.getCode()) {
+                case ESCAPE:
+                    logger.info("Escape key pressed");
+                    endGame();
+                    gameWindow.startMenu();
+                    break;
+                default:
+                    logger.info("Key pressed: {}", event.getText());
+            }
+        });
     }
 
 }

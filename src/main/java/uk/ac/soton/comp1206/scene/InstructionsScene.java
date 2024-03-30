@@ -4,6 +4,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -15,7 +16,7 @@ import uk.ac.soton.comp1206.game.GamePiece;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
-public class InstructionScene extends BaseScene {
+public class InstructionsScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
 
@@ -24,7 +25,7 @@ public class InstructionScene extends BaseScene {
      *
      * @param gameWindow the game window
      */
-    public InstructionScene(GameWindow gameWindow) {
+    public InstructionsScene(GameWindow gameWindow) {
         super(gameWindow);
         logger.info("Creating Instruction Scene");
     }
@@ -61,7 +62,7 @@ public class InstructionScene extends BaseScene {
         instructionsDetails.setTextAlignment(TextAlignment.CENTER);
 
         // Instructions image
-        var imageFilePath = InstructionScene.class.getResource("/images/" + "Instructions.png").toExternalForm();
+        var imageFilePath = InstructionsScene.class.getResource("/images/" + "Instructions.png").toExternalForm();
         Image image = new Image(imageFilePath);
         ImageView imageView = new ImageView(image);
         imageView.setPreserveRatio(true);
@@ -99,6 +100,16 @@ public class InstructionScene extends BaseScene {
      */
     @Override
     public void initialise() {
-
+        // Add keyboard listener to the scene
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            switch (event.getCode()) {
+                case ESCAPE:
+                    logger.info("Escape key pressed");
+                    gameWindow.startMenu();
+                    break;
+                default:
+                    logger.info("Key pressed: {}", event.getText());
+            }
+        });
     }
 }
