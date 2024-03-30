@@ -145,7 +145,9 @@ public class Game {
             int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
             userScore.set(userScore.get() + incScoreBy);
             logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
-            scoreMultiplier.set(getScoreMultiplier().get() + 1);
+            scoreMultiplier.set(scoreMultiplier.get() + 1);
+            // Perhaps this should be outside the if statement?
+            gameLevel.set(userScore.get() / 1000);
         } else {
             scoreMultiplier.set(1);
         }
