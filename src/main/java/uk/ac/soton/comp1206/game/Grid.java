@@ -152,6 +152,17 @@ public class Grid {
     }
 
     /**
+     * Clear the grid by setting all cells to 0
+     */
+    public void clear() {
+        for (var y = 0; y < rows; y++) {
+            for (var x = 0; x < cols; x++) {
+                set(x, y, 0);
+            }
+        }
+    }
+
+    /**
      * Get the number of columns in this game
      * @return number of columns
      */

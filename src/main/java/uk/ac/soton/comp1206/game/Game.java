@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
+import uk.ac.soton.comp1206.event.NextPieceListener;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -29,6 +30,8 @@ public class Game {
      * Number of columns
      */
     protected final int cols;
+
+    private NextPieceListener nextPieceListener;
 
     /**
      * User score
@@ -170,6 +173,12 @@ public class Game {
     public GamePiece nextPiece() {
         currentPiece = spawnPiece();
         logger.info("The next piece is: {}", currentPiece);
+
+        if (nextPieceListener != null) {
+            logger.info("Passing new piece to the nextPieceListener");
+            nextPieceListener.nextPiece(currentPiece);
+        }
+
         return currentPiece;
     }
 
@@ -202,6 +211,10 @@ public class Game {
         } else {
             // Can't play the piece
         }
+    }
+
+    public void setNextPieceListener(NextPieceListener nextPieceListener) {
+        this.nextPieceListener = nextPieceListener;
     }
 
     /**

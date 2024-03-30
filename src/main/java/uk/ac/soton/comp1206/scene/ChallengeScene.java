@@ -90,8 +90,9 @@ public class ChallengeScene extends BaseScene {
 
         PieceBoard nextPieceBoard = new PieceBoard(3, 3, 132, 132);
 
-        //Pane verticalSpacer = new Pane();
-        //VBox.setVgrow(verticalSpacer, Priority.ALWAYS);
+        game.setNextPieceListener((piece) -> {
+            nextPieceBoard.displayPiece(piece);
+        });
 
         Label levelHeading = new Label("Level");
         Label actualLevel = new Label("0");
@@ -125,6 +126,7 @@ public class ChallengeScene extends BaseScene {
                 Multimedia.playBackgroundMusic("game.wav");
             });
         }
+
     }
 
     /**
