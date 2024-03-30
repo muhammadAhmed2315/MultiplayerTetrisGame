@@ -82,7 +82,7 @@ public class InstructionScene extends BaseScene {
         int piecesCounter = 0;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 5; col++) {
-                PieceBoard myPiece = new PieceBoard(3, 3, 55, 55); // TODO change dimensions
+                PieceBoard myPiece = new PieceBoard(3, 3, 55, 55);
                 myPiece.displayPiece(GamePiece.createPiece(piecesCounter));
                 piecesGrid.add(myPiece, col, row);
                 piecesCounter++;
