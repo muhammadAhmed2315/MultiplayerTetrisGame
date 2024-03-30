@@ -141,12 +141,14 @@ public class Game {
                 }
             });
             pause.play();
+            // Find value to update the score by
+            int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
+            userScore.set(userScore.get() + incScoreBy);
+            logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
+            scoreMultiplier.set(getScoreMultiplier().get() + 1);
+        } else {
+            scoreMultiplier.set(1);
         }
-
-        // Find value to update the score by
-        int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
-        userScore.set(userScore.get() + incScoreBy);
-        logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
     }
 
     /**
