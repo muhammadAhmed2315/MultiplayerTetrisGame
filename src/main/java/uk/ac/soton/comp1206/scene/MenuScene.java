@@ -1,9 +1,12 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,12 +53,23 @@ public class MenuScene extends BaseScene {
         title.getStyleClass().add("title");
         mainPane.setTop(title);
 
-        //For now, let us just add a button that starts the game. I'm sure you'll do something way better.
-        var button = new Button("Play");
-        mainPane.setCenter(button);
+        // Main menu buttons list
+        var singlePlayerButton = new Button("Single Player");
+        var multiPlayerButton = new Button("Multi Player");
+        var instructionsButton = new Button("How to Play");
+        var exitButton = new Button("Exit");
 
-        //Bind the button action to the startGame method in the menu
-        button.setOnAction(this::startGame);
+        //Bind the button actions to the necessary methods
+        singlePlayerButton.setOnAction(this::startGame);
+        // TODO: multiplayer button
+        // TODO: instruction button
+        exitButton.setOnAction((event) -> Platform.exit());
+
+        VBox buttonsList = new VBox(singlePlayerButton, multiPlayerButton, instructionsButton, exitButton);
+        buttonsList.setAlignment(Pos.CENTER);
+        buttonsList.setSpacing(12);
+        mainPane.setCenter(buttonsList);
+
 
         // If other background music is already playing
         if (Multimedia.getMusicPlayer() != null) {

@@ -90,9 +90,7 @@ public class ChallengeScene extends BaseScene {
 
         PieceBoard nextPieceBoard = new PieceBoard(3, 3, 132, 132);
 
-        game.setNextPieceListener((piece) -> {
-            nextPieceBoard.displayPiece(piece);
-        });
+        game.setNextPieceListener(nextPieceBoard::displayPiece);
 
         Label levelHeading = new Label("Level");
         Label actualLevel = new Label("0");
