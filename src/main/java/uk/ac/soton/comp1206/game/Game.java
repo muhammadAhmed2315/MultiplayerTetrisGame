@@ -132,6 +132,7 @@ public class Game {
         // Clear the lines
         if (!blocksToBeCleared.isEmpty()) {
             // Pause for 2 seconds before clearing the lines
+            // TODO fix this messes up the score
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
             pause.setOnFinished(event -> {
                 // Clear the lines
@@ -144,6 +145,8 @@ public class Game {
 
         // Find value to update the score by
         int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
+        userScore.set(userScore.get() + incScoreBy);
+        logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
     }
 
     /**

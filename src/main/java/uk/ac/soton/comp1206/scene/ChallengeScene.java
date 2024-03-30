@@ -1,17 +1,20 @@
 package uk.ac.soton.comp1206.scene;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.util.converter.NumberStringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.game.Game;
-import uk.ac.soton.comp1206.game.GamePiece;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -22,10 +25,6 @@ public class ChallengeScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
     protected Game game;
-    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(0);
-    private final SimpleIntegerProperty scoreMultiplier = new SimpleIntegerProperty(1);
-    private final SimpleIntegerProperty gameLevel = new SimpleIntegerProperty(0);
-    private final SimpleIntegerProperty livesRemaining = new SimpleIntegerProperty(3);
 
     /**
      * Create a new Single Player challenge scene
@@ -59,17 +58,11 @@ public class ChallengeScene extends BaseScene {
         var board = new GameBoard(game.getGrid(),gameWindow.getWidth()/2,gameWindow.getWidth()/2);
         mainPane.setCenter(board);
 
-        // Bind score, level, multiplier, and lives to the properties in Game
-        game.getGameLevel().bindBidirectional(gameLevel);
-        game.getLivesRemaining().bindBidirectional(livesRemaining);
-        game.getScoreMultiplier().bindBidirectional(scoreMultiplier);
-        game.getUserScore().bindBidirectional(userScore);
-
         // Bar at the top of the screen showing the score on the left and the lives remaining
         // on the left
         // HBox containing score and lives
         Label scoreHeading = new Label("Score");
-        Label actualScore = new Label(userScore.getValue().toString());
+        Label actualScore = new Label("0");
         scoreHeading.getStyleClass().add("heading");
         actualScore.getStyleClass().add("score");
         VBox scoreVBox = new VBox(scoreHeading, actualScore);
@@ -78,7 +71,7 @@ public class ChallengeScene extends BaseScene {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Label livesHeading = new Label("Lives");
-        Label actualLives = new Label(livesRemaining.getValue().toString());
+        Label actualLives = new Label("3");
         livesHeading.getStyleClass().add("heading");
         actualLives.getStyleClass().add("lives");
         VBox livesVBox = new VBox(livesHeading, actualLives);
@@ -88,7 +81,7 @@ public class ChallengeScene extends BaseScene {
 
         // Bar on the right hand side, showing the high score on the top, and the level below
         Label multiplierHeading = new Label("Multiplier");
-        Label actualMultiplier = new Label(scoreMultiplier.getValue().toString());
+        Label actualMultiplier = new Label("1");
         multiplierHeading.getStyleClass().add("heading");
         actualMultiplier.getStyleClass().add("level");
         VBox multiplierVBox = new VBox(multiplierHeading, actualMultiplier);
@@ -97,13 +90,18 @@ public class ChallengeScene extends BaseScene {
         VBox.setVgrow(verticalSpacer, Priority.ALWAYS);
 
         Label levelHeading = new Label("Level");
-        Label actualLevel = new Label(gameLevel.getValue().toString());
+        Label actualLevel = new Label("0");
         levelHeading.getStyleClass().add("heading");
         actualLevel.getStyleClass().add("level");
         VBox levelVBox = new VBox(levelHeading, actualLevel);
 
         VBox rightBar = new VBox(multiplierVBox, verticalSpacer, levelVBox);
         rightBar.setAlignment(Pos.CENTER);
+
+        Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
+        Bindings.bindBidirectional(actualLevel.textProperty(), game.getGameLevel(), new NumberStringConverter());
+        Bindings.bindBidirectional(actualLives.textProperty(), game.getLivesRemaining(), new NumberStringConverter());
+        Bindings.bindBidirectional(actualMultiplier.textProperty(), game.getScoreMultiplier(), new NumberStringConverter());
 
         // Set the margins or spacing between the subcomponents
         topBar.setSpacing(10); // Set spacing between the subcomponents
