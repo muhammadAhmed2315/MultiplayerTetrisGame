@@ -141,6 +141,19 @@ public class Game {
             });
             pause.play();
         }
+
+        // Find value to update the score by
+        int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
+    }
+
+    /**
+     * Calculates how much the score should increase by given the number of blocks and lines cleared
+     * @param linesCleared number of lines cleared
+     * @param blocksCleared number of blocks cleared
+     * @return value to increment current score by (or points gained by last play)
+     */
+    public int calculateScore(int linesCleared, int blocksCleared) {
+        return linesCleared * blocksCleared * 10 * scoreMultiplier.getValue();
     }
 
     /**
