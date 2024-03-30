@@ -81,7 +81,7 @@ public class ChallengeScene extends BaseScene {
         HBox topBar = new HBox(scoreVBox, spacer, livesVBox);
         topBar.setAlignment(Pos.CENTER);
 
-        // Bar on the right hand side, showing the high score on the top, and the level below
+        // Bar on the right hand side, showing the high score, next piece, and the level
         Label multiplierHeading = new Label("Multiplier");
         Label actualMultiplier = new Label("1");
         multiplierHeading.getStyleClass().add("heading");

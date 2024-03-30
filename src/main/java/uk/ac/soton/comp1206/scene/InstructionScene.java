@@ -4,11 +4,14 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.component.PieceBoard;
+import uk.ac.soton.comp1206.game.GamePiece;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -69,10 +72,25 @@ public class InstructionScene extends BaseScene {
         Label gamePiecesHeading = new Label("Game Pieces");
         gamePiecesHeading.getStyleClass().add("heading");
 
-        //
+        // GridPane to store 15 pieces
+        GridPane piecesGrid = new GridPane();
+        piecesGrid.setAlignment(Pos.CENTER);
+        piecesGrid.setGridLinesVisible(true);
+        piecesGrid.setHgap(10); // Horizontal gap
+        piecesGrid.setVgap(10); // Vertical gap
+
+        int piecesCounter = 0;
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 5; col++) {
+                PieceBoard myPiece = new PieceBoard(3, 3, 55, 55); // TODO change dimensions
+                myPiece.displayPiece(GamePiece.createPiece(piecesCounter));
+                piecesGrid.add(myPiece, col, row);
+                piecesCounter++;
+            }
+        }
 
         contentVBox.getChildren().addAll(
-            instructionsHeading, instructionsDetails, imageView, gamePiecesHeading
+            instructionsHeading, instructionsDetails, imageView, gamePiecesHeading, piecesGrid
         );
     }
 
