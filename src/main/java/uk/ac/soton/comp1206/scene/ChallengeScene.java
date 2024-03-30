@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBoard;
+import uk.ac.soton.comp1206.component.PieceBoard;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
@@ -45,7 +46,7 @@ public class ChallengeScene extends BaseScene {
 
         setupGame();
 
-        root = new GamePane(gameWindow.getWidth(),gameWindow.getHeight());
+        root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
         var challengePane = new StackPane();
         challengePane.setMaxWidth(gameWindow.getWidth());
@@ -87,8 +88,10 @@ public class ChallengeScene extends BaseScene {
         actualMultiplier.getStyleClass().add("level");
         VBox multiplierVBox = new VBox(multiplierHeading, actualMultiplier);
 
-        Pane verticalSpacer = new Pane();
-        VBox.setVgrow(verticalSpacer, Priority.ALWAYS);
+        PieceBoard nextPieceBoard = new PieceBoard(3, 3, 132, 132);
+
+        //Pane verticalSpacer = new Pane();
+        //VBox.setVgrow(verticalSpacer, Priority.ALWAYS);
 
         Label levelHeading = new Label("Level");
         Label actualLevel = new Label("0");
@@ -96,7 +99,7 @@ public class ChallengeScene extends BaseScene {
         actualLevel.getStyleClass().add("level");
         VBox levelVBox = new VBox(levelHeading, actualLevel);
 
-        VBox rightBar = new VBox(multiplierVBox, verticalSpacer, levelVBox);
+        VBox rightBar = new VBox(multiplierVBox, nextPieceBoard, levelVBox);
         rightBar.setAlignment(Pos.CENTER);
 
         Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
