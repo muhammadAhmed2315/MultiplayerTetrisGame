@@ -70,15 +70,7 @@ public class MenuScene extends BaseScene {
         buttonsList.setSpacing(12);
         mainPane.setCenter(buttonsList);
 
-
-        // If other background music is already playing
-        if (Multimedia.getMusicPlayer() != null) {
-            Multimedia.getMusicPlayer().stop();
-            Multimedia.playBackgroundMusic("menu.mp3");
-        } else {
-            // No background music is playing (when game is first booted up)
-            Multimedia.playBackgroundMusic("menu.mp3");
-        }
+        Multimedia.switchBackgroundMusic("menu.mp3");
 
     }
 

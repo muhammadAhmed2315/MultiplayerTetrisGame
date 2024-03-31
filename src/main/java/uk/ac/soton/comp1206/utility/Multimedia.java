@@ -34,9 +34,9 @@ public class Multimedia {
      */
     public static void playAudioFile(String fileName) {
         logger.info("Attempting to play sound effect {}", fileName);
-        if (audioFiles.get(fileName) || !audioFiles.containsKey(fileName)) {
+        if (!audioFiles.containsKey(fileName) || audioFiles.get(fileName)) {
             try {
-                var filePath = Multimedia.class.getResource("/" + fileName).toExternalForm();
+                var filePath = Multimedia.class.getResource("/sounds/" + fileName).toExternalForm();
                 Media sound = new Media(filePath);
                 audioPlayer = new MediaPlayer(sound);
                 audioPlayer.play();
@@ -68,6 +68,34 @@ public class Multimedia {
             e.printStackTrace();
             logger.error("Unable to play sound: " + fileName);
         }
+    }
+
+    /**
+     * Stops the current background music and plays the inputted music instead
+     * Use this function when other background music is already playing
+     * @param fileName file name of background music to be played
+     */
+    public static void switchBackgroundMusic(String fileName) {
+        logger.info("Switching background music to {}", fileName);
+        // If other background music is already playing
+        if (Multimedia.getMusicPlayer() != null) {
+            Multimedia.getMusicPlayer().stop();
+        }
+        Multimedia.playBackgroundMusic(fileName);
+    }
+
+    /**
+     * Stops the current sound effect and plays the inputted sound effect instead
+     * Use this function when other sound effects are already playing
+     * @param fileName file name of sound effect to be played
+     */
+    public static void switchAudioFile(String fileName) {
+        logger.info("Switching background music to {}", fileName);
+        // If other background music is already playing
+        if (Multimedia.getAudioPlayer() != null) {
+            Multimedia.getAudioPlayer().stop();
+        }
+        Multimedia.playAudioFile(fileName);
     }
 
     /**

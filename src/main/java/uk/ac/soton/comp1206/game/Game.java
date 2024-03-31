@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import uk.ac.soton.comp1206.event.NextPieceListener;
+import uk.ac.soton.comp1206.utility.Multimedia;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -141,24 +142,30 @@ public class Game {
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
             pause.setOnFinished(event -> {
                 // Clear the lines
+                Multimedia.switchAudioFile("clear.wav");
                 for (GameBlockCoordinate x : blocksToBeCleared) {
                     grid.set(x.getX(), x.getY(), 0);
                 }
             });
             pause.play();
             // Find value to update the score by
+            int oldGameLevel = gameLevel.intValue();
             int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
             userScore.set(userScore.get() + incScoreBy);
             logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
             scoreMultiplier.set(scoreMultiplier.get() + 1);
             // Perhaps this should be outside the if statement?
             gameLevel.set(userScore.get() / 1000);
+            if (gameLevel.intValue() != oldGameLevel) {
+                Multimedia.switchAudioFile("level.wav");
+            }
         } else {
             scoreMultiplier.set(1);
         }
     }
 
     public void rotateCurrentPiece() {
+        Multimedia.switchAudioFile("rotate.wav");
         currentPiece.rotate();
         nextPieceListener.nextPiece(currentPiece, nextPiece);
     }
@@ -213,11 +220,13 @@ public class Game {
 
         if (grid.canPlayPiece(currentPiece, x, y)) {
             // Can play the piece
+            Multimedia.switchAudioFile("place.wav");
             grid.playPiece(currentPiece, x, y);
             nextPiece();
             afterPiece();
         } else {
             // Can't play the piece
+            Multimedia.switchAudioFile("fail.wav");
         }
     }
 
@@ -225,6 +234,7 @@ public class Game {
         var temp = nextPiece;
         nextPiece = currentPiece;
         currentPiece = temp;
+        Multimedia.switchAudioFile("rotate.wav");
         nextPieceListener.nextPiece(currentPiece, nextPiece);
     }
 
