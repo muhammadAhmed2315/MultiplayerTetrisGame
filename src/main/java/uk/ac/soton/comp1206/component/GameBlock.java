@@ -185,6 +185,35 @@ public class GameBlock extends Canvas {
     }
 
     /**
+     * Changes the appearance of a block if it is being hovered over by the mouse
+     */
+    public void onHover() {
+        var gc = getGraphicsContext2D();
+
+        // Change outline of the block to red
+        gc.setStroke(Color.RED);
+        gc.setLineWidth(2);
+        gc.strokeRoundRect(4, 4, width - 8, height - 8, 10, 10);
+    }
+
+    /**
+     * Changes the appearance of a hovered block once it is no longer being hovered on by the mouse
+     */
+    public void offHover() {
+        var gc = getGraphicsContext2D();
+
+        // Clear the stroke
+        gc.clearRect(0, 0, width, height);
+
+        // Redraw the block without the hover effect
+        if (getValue() == 0) {
+            paintEmpty();
+        } else {
+            paintColor(COLOURS[getValue()]);
+        }
+    }
+
+    /**
      * Get the column of this block
      * @return column number
      */

@@ -49,6 +49,12 @@ public class GameBoard extends GridPane {
     final Grid grid;
 
     /**
+     * Decides whether the block outline hovering effect should be enabled for this GameBoard
+     * or not [TRUE = hovering effects, FALSE = no hovering effects]
+     */
+    private final boolean hoverEnabled;
+
+    /**
      * The blocks inside the grid
      */
     GameBlock[][] blocks;
@@ -76,6 +82,9 @@ public class GameBoard extends GridPane {
         this.width = width;
         this.height = height;
         this.grid = grid;
+        // This constructor for GameBoard is used for the main GameBoard, which we want hovering
+        // effects for
+        hoverEnabled = true;
 
         //Build the GameBoard
         build();
@@ -87,7 +96,6 @@ public class GameBoard extends GridPane {
                 this.GameBoardRightClicked();
             }
         });
-
     }
 
     /**
@@ -105,6 +113,9 @@ public class GameBoard extends GridPane {
         this.width = width;
         this.height = height;
         this.grid = new Grid(cols,rows);
+        // This constructor for GameBoard is used by PieceBoard, which we don't want hovering
+        // effects for
+        hoverEnabled = false;
 
         //Build the GameBoard
         build();
@@ -143,7 +154,17 @@ public class GameBoard extends GridPane {
 
         for(var y = 0; y < rows; y++) {
             for (var x = 0; x < cols; x++) {
-                createBlock(x,y);
+                var temp_block = createBlock(x,y);
+                if (hoverEnabled) {
+                    // Add a mouse handler for once the block is hovered
+                    temp_block.setOnMouseEntered((event) -> {
+                        temp_block.onHover();
+                    });
+                    // Add a mouse handler for once the hovered block is no longer hovered
+                    temp_block.setOnMouseExited((event) -> {
+                        temp_block.offHover();
+                    });
+                }
             }
         }
     }
@@ -152,6 +173,7 @@ public class GameBoard extends GridPane {
      * Create a block at the given x and y position in the GameBoard
      * @param x column
      * @param y row
+     * @return Newly created GameBlock
      */
     protected GameBlock createBlock(int x, int y) {
         var blockWidth = width / cols;
