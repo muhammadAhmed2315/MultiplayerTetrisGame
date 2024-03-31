@@ -58,6 +58,7 @@ public class Game {
      */
     protected final Grid grid;
     private GamePiece currentPiece;
+    private GamePiece nextPiece;
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
@@ -85,6 +86,7 @@ public class Game {
      */
     public void initialiseGame() {
         logger.info("Initialising game");
+        nextPiece = spawnPiece();
         nextPiece();
     }
 
@@ -156,6 +158,11 @@ public class Game {
         }
     }
 
+    public void rotateCurrentPiece() {
+        currentPiece.rotate();
+        nextPieceListener.nextPiece(currentPiece, nextPiece);
+    }
+
     /**
      * Calculates how much the score should increase by given the number of blocks and lines cleared
      * @param linesCleared number of lines cleared
@@ -170,16 +177,17 @@ public class Game {
      * Updates currentPiece to a new randomly generated piece
      * @return updated currentPiece
      */
-    public GamePiece nextPiece() {
-        currentPiece = spawnPiece();
+    public void nextPiece() {
+        currentPiece = nextPiece;
         logger.info("The next piece is: {}", currentPiece);
+
+        nextPiece = spawnPiece();
+        logger.info("The following piece is: {}", nextPiece);
 
         if (nextPieceListener != null) {
             logger.info("Passing new piece to the nextPieceListener");
-            nextPieceListener.nextPiece(currentPiece);
+            nextPieceListener.nextPiece(currentPiece, nextPiece);
         }
-
-        return currentPiece;
     }
 
     /**
@@ -199,7 +207,7 @@ public class Game {
      * @param gameBlock the block that was clicked
      */
     public void blockClicked(GameBlock gameBlock) {
-        //Get the position of this block
+        // Get the position of this block
         int x = gameBlock.getX();
         int y = gameBlock.getY();
 
@@ -211,6 +219,13 @@ public class Game {
         } else {
             // Can't play the piece
         }
+    }
+
+    public void swapCurrentPiece() {
+        var temp = nextPiece;
+        nextPiece = currentPiece;
+        currentPiece = temp;
+        nextPieceListener.nextPiece(currentPiece, nextPiece);
     }
 
     public void setNextPieceListener(NextPieceListener nextPieceListener) {

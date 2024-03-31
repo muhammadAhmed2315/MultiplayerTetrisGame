@@ -89,9 +89,13 @@ public class ChallengeScene extends BaseScene {
         actualMultiplier.getStyleClass().add("level");
         VBox multiplierVBox = new VBox(multiplierHeading, actualMultiplier);
 
-        PieceBoard nextPieceBoard = new PieceBoard(3, 3, 132, 132);
+        PieceBoard currentPieceBoard = new PieceBoard(3, 3, 132, 132);
+        PieceBoard nextPieceBoard = new PieceBoard(3, 3, 80, 80);
 
-        game.setNextPieceListener(nextPieceBoard::displayPiece);
+        game.setNextPieceListener(((currentGamePiece, nextGamePiece) -> {
+            currentPieceBoard.displayPiece(currentGamePiece);
+            nextPieceBoard.displayPiece(nextGamePiece);
+        }));
 
         Label levelHeading = new Label("Level");
         Label actualLevel = new Label("0");
@@ -99,7 +103,7 @@ public class ChallengeScene extends BaseScene {
         actualLevel.getStyleClass().add("level");
         VBox levelVBox = new VBox(levelHeading, actualLevel);
 
-        VBox rightBar = new VBox(multiplierVBox, nextPieceBoard, levelVBox);
+        VBox rightBar = new VBox(multiplierVBox, currentPieceBoard, nextPieceBoard, levelVBox);
         rightBar.setAlignment(Pos.CENTER);
 
         Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
@@ -112,8 +116,12 @@ public class ChallengeScene extends BaseScene {
         mainPane.setTop(topBar);
         mainPane.setRight(rightBar);
 
-        //Handle block on gameboard grid being clicked
+        // Set what function is executed when a block, the main GameBoard, or the two PieceBoards
+        // are clicked
         board.setOnBlockClick(this::blockClicked);
+        board.setOnRightClick(this::GameBoardClicked);
+        currentPieceBoard.setOnRightClick(this::GameBoardClicked);
+        nextPieceBoard.setOnRightClick(this::nextPieceGameBoardClicked);
 
         // If other background music is playing (e.g., menu background music)
         if (Multimedia.getMusicPlayer() != null) {
@@ -126,6 +134,20 @@ public class ChallengeScene extends BaseScene {
             });
         }
 
+    }
+
+    /**
+     * Handles what happens if the next piece GameBoard is left-clicked
+     */
+    private void nextPieceGameBoardClicked() {
+        game.swapCurrentPiece();
+    }
+
+    /**
+     * Handles what happens if the main GameBoard is right-clicked
+     */
+    private void GameBoardClicked() {
+        game.rotateCurrentPiece();
     }
 
     /**
@@ -170,6 +192,9 @@ public class ChallengeScene extends BaseScene {
                     logger.info("Escape key pressed");
                     endGame();
                     gameWindow.startMenu();
+                    break;
+                case UP:
+                    game.rotateCurrentPiece();
                     break;
                 default:
                     logger.info("Key pressed: {}", event.getText());

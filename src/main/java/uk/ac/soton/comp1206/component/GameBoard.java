@@ -1,17 +1,19 @@
 package uk.ac.soton.comp1206.component;
 
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.event.BlockClickedListener;
+import uk.ac.soton.comp1206.event.RightClickedListener;
 import uk.ac.soton.comp1206.game.Grid;
 
 /**
  * A GameBoard is a visual component to represent the visual GameBoard.
  * It extends a GridPane to hold a grid of GameBlocks.
  *
- * The GameBoard can hold an internal grid of it's own, for example, for displaying an upcoming block. It also be
+ * The GameBoard can hold an internal grid of its own, for example, for displaying an upcoming block. It also be
  * linked to an external grid, for the main game board.
  *
  * The GameBoard is only a visual representation and should not contain game logic or model logic in it, which should
@@ -56,6 +58,11 @@ public class GameBoard extends GridPane {
      */
     private BlockClickedListener blockClickedListener;
 
+    /**
+     * The listener to call when the user wants to rotate a block
+     */
+    private RightClickedListener rightClickedListener;
+
 
     /**
      * Create a new GameBoard, based off a given grid, with a visual width and height.
@@ -72,10 +79,19 @@ public class GameBoard extends GridPane {
 
         //Build the GameBoard
         build();
+
+        // Add a mouse click handler to the main GameBoard to trigger the
+        // GameBoardRightClicked method
+        this.setOnMouseClicked((event) -> {
+            if (event.getButton() == MouseButton.SECONDARY) {
+                this.GameBoardRightClicked();
+            }
+        });
+
     }
 
     /**
-     * Create a new GameBoard with it's own internal grid, specifying the number of columns and rows, along with the
+     * Create a new GameBoard with its own internal grid, specifying the number of columns and rows, along with the
      * visual width and height.
      *
      * @param cols number of columns for internal grid
@@ -92,10 +108,18 @@ public class GameBoard extends GridPane {
 
         //Build the GameBoard
         build();
+
+        // Add a mouse click handler to the primary GameBoard that handles what happens when the
+        // primary GameBoard is left-clicked
+        this.setOnMouseClicked((event) -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                this.GameBoardRightClicked();
+            }
+        });
     }
 
     /**
-     * Get a specific block from the GameBoard, specified by it's row and column
+     * Get a specific block from the GameBoard, specified by its row and column
      * @param x column
      * @param y row
      * @return game block at the given column and row
@@ -145,18 +169,41 @@ public class GameBoard extends GridPane {
         //Link the GameBlock component to the corresponding value in the Grid
         block.bind(grid.getGridProperty(x,y));
 
-        //Add a mouse click handler to the block to trigger GameBoard blockClicked method
-        block.setOnMouseClicked((e) -> blockClicked(e, block));
+        // Add a mouse click handler to the block to trigger GameBoard blockClicked method
+        block.setOnMouseClicked((event) -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                blockClicked(event, block);
+            }
+        });
 
         return block;
     }
 
     /**
-     * Set the listener to handle an event when a block is clicked
-     * @param listener listener to add
+     * Add a listener to the GameBoard that handles what happens when a block is clicked
+     * @param listener listener to add to the GameBoard
      */
     public void setOnBlockClick(BlockClickedListener listener) {
         this.blockClickedListener = listener;
+    }
+
+    /**
+     * Add a listener to the GameBoard that handles what happens when a GameBoard is clicked
+     * @param rightClickedListener listener to add to the GameBoard
+     */
+    public void setOnRightClick(RightClickedListener rightClickedListener) {
+        this.rightClickedListener = rightClickedListener;
+    }
+
+    /**
+     * Triggered when the main GameBoard is right-clicked. Call the attached listener.
+     */
+    private void GameBoardRightClicked() {
+        logger.info("Main GameBoard right-clicked");
+
+        if (rightClickedListener != null) {
+            rightClickedListener.handle();
+        }
     }
 
     /**
