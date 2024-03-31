@@ -4,7 +4,13 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.paint.*;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.effect.Glow;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Paint;
+import javafx.scene.paint.Stop;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -118,16 +124,27 @@ public class GameBlock extends Canvas {
     private void paintEmpty() {
         var gc = getGraphicsContext2D();
 
-        //Clear
-        gc.clearRect(0,0,width,height);
+        // Clear
+        gc.clearRect(0, 0, width, height);
 
-        //Fill
-        gc.setFill(Color.WHITE);
-        gc.fillRect(0,0, width, height);
+        // Semi-transparent grey background
+        Color backgroundColor = Color.rgb(128, 128, 128, 0.3);
+        gc.setFill(backgroundColor);
+        gc.fillRoundRect(0, 0, width, height, 10, 10);
 
-        //Border
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(0,0,width,height);
+        // Neon sign-like outline
+        gc.setStroke(Color.rgb(0, 0, 0));
+        gc.setLineWidth(2);
+        gc.setEffect(new Glow(0.8));
+        gc.strokeRoundRect(1, 1, width - 2, height - 2, 8, 8);
+        gc.setEffect(null);
+
+        // Inner neon sign-like outline
+        gc.setStroke(Color.rgb(0, 0, 0));
+        gc.setLineWidth(1);
+        gc.setEffect(new Glow(0.6));
+        gc.strokeRoundRect(4, 4, width - 8, height - 8, 6, 6);
+        gc.setEffect(null);
     }
 
     /**
@@ -137,16 +154,34 @@ public class GameBlock extends Canvas {
     private void paintColor(Paint colour) {
         var gc = getGraphicsContext2D();
 
-        //Clear
-        gc.clearRect(0,0,width,height);
+        // Clear
+        gc.clearRect(0, 0, width, height);
 
-        //Colour fill
-        gc.setFill(colour);
-        gc.fillRect(0,0, width, height);
+        // Neon glow effect
+        Color glowColor = ((Color) colour).deriveColor(0, 1, 1, 0.8);
+        gc.setEffect(new GaussianBlur(5));
+        gc.setFill(glowColor);
+        gc.fillRoundRect(2, 2, width - 4, height - 4, 15, 15);
+        gc.setEffect(null);
 
-        //Border
-        gc.setStroke(Color.BLACK);
-        gc.strokeRect(0,0,width,height);
+        // Gradient fill
+        Color lightColor = ((Color) colour).interpolate(Color.WHITE, 0.3);
+        Stop[] stops = new Stop[] {
+            new Stop(0, lightColor),
+            new Stop(1, (Color) colour)
+        };
+        LinearGradient gradient = new LinearGradient(0, 0, 0, height, true, CycleMethod.NO_CYCLE, stops);
+        gc.setFill(gradient);
+        gc.fillRoundRect(4, 4, width - 8, height - 8, 10, 10);
+
+        // Reflection effect
+        gc.setFill(Color.color(1, 1, 1, 0.2));
+        gc.fillOval(width * 0.2, height * 0.2, width * 0.6, height * 0.2);
+
+        // Border
+        gc.setStroke(glowColor);
+        gc.setLineWidth(2);
+        gc.strokeRoundRect(4, 4, width - 8, height - 8, 10, 10);
     }
 
     /**
