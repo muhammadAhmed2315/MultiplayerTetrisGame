@@ -1,14 +1,13 @@
 package uk.ac.soton.comp1206.event;
 
 /**
- * TODO update this comment its not correct
- * The Block Clicked listener is used to handle the event when a block in a GameBoard is clicked. It
- * passes the GameBlock that was clicked in the message
+ * Handles what happens when a GameBoard or PieceBoard is mouse clicked.
  */
 public interface RightClickedListener {
 
     /**
-     * TODO update this comment its not correct
+     * Called when a GameBoard or PieceBoard is mouse clicked.
+     * Implementing classes should provide the necessary logic to handle the mouse click event.
      */
-    public void handle ();
+    public void handle();
 }

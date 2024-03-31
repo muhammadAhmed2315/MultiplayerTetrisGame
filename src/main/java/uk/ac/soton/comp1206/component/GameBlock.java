@@ -32,22 +32,22 @@ public class GameBlock extends Canvas {
      * The set of colours for different pieces
      */
     public static final Color[] COLOURS = {
-            Color.TRANSPARENT,
-            Color.DEEPPINK,
-            Color.RED,
-            Color.ORANGE,
-            Color.YELLOW,
-            Color.YELLOWGREEN,
-            Color.LIME,
-            Color.GREEN,
-            Color.DARKGREEN,
-            Color.DARKTURQUOISE,
-            Color.DEEPSKYBLUE,
-            Color.AQUA,
-            Color.AQUAMARINE,
-            Color.BLUE,
-            Color.MEDIUMPURPLE,
-            Color.PURPLE
+        Color.TRANSPARENT,
+        Color.DEEPPINK,
+        Color.PALEVIOLETRED,
+        Color.ORANGE,
+        Color.YELLOW,
+        Color.YELLOWGREEN,
+        Color.LIME,
+        Color.GREEN,
+        Color.DARKGREEN,
+        Color.DARKTURQUOISE,
+        Color.DEEPSKYBLUE,
+        Color.AQUA,
+        Color.AQUAMARINE,
+        Color.BLUE,
+        Color.MEDIUMPURPLE,
+        Color.PURPLE
     };
 
     private final GameBoard gameBoard;
@@ -119,7 +119,9 @@ public class GameBlock extends Canvas {
         }
     }
 
-    // TODO comment this
+    /**
+     * Fading animation for when a block is cleared
+     */
     public void fadeOut() {
         var FADE_DURATION = 1.0; // Duration of the fade effect in seconds
         final double[] fadeProgress = {0.0};

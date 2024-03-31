@@ -31,10 +31,14 @@ public class Game {
      */
     protected final int cols;
 
-    // TODO this comment
+    /**
+     * Listener for handling when the next piece
+     */
     private NextPieceListener nextPieceListener;
 
-    // TODO this comment
+    /**
+     * Listener for handling when a line needs to be cleared
+     */
     private LineClearedListener lineClearedListener;
 
     /**
@@ -226,8 +230,11 @@ public class Game {
         }
     }
 
-    // TODO this comment
+    /**
+     * Swaps the current piece with the next piece
+     */
     public void swapCurrentPiece() {
+        logger.info("Swapping current piece with the upcoming piece");
         var temp = nextPiece;
         nextPiece = currentPiece;
         currentPiece = temp;
@@ -235,21 +242,18 @@ public class Game {
         nextPieceListener.nextPiece(currentPiece, nextPiece);
     }
 
-    // TODO this comment
+    // Sets nextPieceListener
     public void setNextPieceListener(NextPieceListener nextPieceListener) {
         this.nextPieceListener = nextPieceListener;
     }
 
-    // TODO this comment
+    // Sets lineClearedListener
     public void setOnLineClear(LineClearedListener lineClearedListener) {
         this.lineClearedListener = lineClearedListener;
     }
 
-    // TODO this comment
+    // Calls event handling code for when a line needs to be cleared
     private void lineCleared(HashSet<GameBlockCoordinate> blocksToBeCleared) {
-        // TODO this logger
-        // logger.info("Block clicked: {}", block);
-
         if(lineClearedListener != null) {
             lineClearedListener.handle(blocksToBeCleared);
         }

@@ -89,17 +89,15 @@ public class ChallengeScene extends BaseScene {
         actualMultiplier.getStyleClass().add("level");
         VBox multiplierVBox = new VBox(multiplierHeading, actualMultiplier);
 
-        PieceBoard currentPieceBoard = new PieceBoard(3, 3, 132, 132);
-        PieceBoard nextPieceBoard = new PieceBoard(3, 3, 80, 80);
+        PieceBoard currentPieceBoard = new PieceBoard(3, 3, 132, 132, true);
+        PieceBoard nextPieceBoard = new PieceBoard(3, 3, 80, 80, false);
 
         game.setNextPieceListener(((currentGamePiece, nextGamePiece) -> {
             currentPieceBoard.displayPiece(currentGamePiece);
             nextPieceBoard.displayPiece(nextGamePiece);
         }));
 
-        game.setOnLineClear(blocksToBeCleared -> {
-            board.fadeOut(blocksToBeCleared);
-        });
+        game.setOnLineClear(board::fadeOut);
 
         Label levelHeading = new Label("Level");
         Label actualLevel = new Label("0");

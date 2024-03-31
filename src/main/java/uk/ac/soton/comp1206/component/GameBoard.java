@@ -201,7 +201,7 @@ public class GameBoard extends GridPane {
         return block;
     }
 
-    // TODO this comment and rename the function?
+    // Calls the fading animation on each block that is passed to it
     public void fadeOut(HashSet<GameBlockCoordinate> coordinates) {
         for (GameBlockCoordinate coordinate : coordinates) {
             getBlock(coordinate.getX(), coordinate.getY()).fadeOut();
