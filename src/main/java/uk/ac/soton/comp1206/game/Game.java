@@ -2,13 +2,12 @@ package uk.ac.soton.comp1206.game;
 
 import java.util.HashSet;
 import java.util.Random;
-import javafx.animation.PauseTransition;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
+import uk.ac.soton.comp1206.event.LineClearedListener;
 import uk.ac.soton.comp1206.event.NextPieceListener;
 import uk.ac.soton.comp1206.utility.Multimedia;
 
@@ -32,7 +31,11 @@ public class Game {
      */
     protected final int cols;
 
+    // TODO this comment
     private NextPieceListener nextPieceListener;
+
+    // TODO this comment
+    private LineClearedListener lineClearedListener;
 
     /**
      * User score
@@ -137,17 +140,10 @@ public class Game {
         logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
         // Clear the lines
         if (!blocksToBeCleared.isEmpty()) {
-            // Pause for 2 seconds before clearing the lines
-            // TODO fix this messes up the score
-            PauseTransition pause = new PauseTransition(Duration.seconds(1));
-            pause.setOnFinished(event -> {
-                // Clear the lines
-                Multimedia.switchAudioFile("clear.wav");
-                for (GameBlockCoordinate x : blocksToBeCleared) {
-                    grid.set(x.getX(), x.getY(), 0);
-                }
-            });
-            pause.play();
+            lineCleared(blocksToBeCleared);
+            for (GameBlockCoordinate x : blocksToBeCleared) {
+                grid.set(x.getX(), x.getY(), 0);
+            }
             // Find value to update the score by
             int oldGameLevel = gameLevel.intValue();
             int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
@@ -230,6 +226,7 @@ public class Game {
         }
     }
 
+    // TODO this comment
     public void swapCurrentPiece() {
         var temp = nextPiece;
         nextPiece = currentPiece;
@@ -238,8 +235,24 @@ public class Game {
         nextPieceListener.nextPiece(currentPiece, nextPiece);
     }
 
+    // TODO this comment
     public void setNextPieceListener(NextPieceListener nextPieceListener) {
         this.nextPieceListener = nextPieceListener;
+    }
+
+    // TODO this comment
+    public void setOnLineClear(LineClearedListener lineClearedListener) {
+        this.lineClearedListener = lineClearedListener;
+    }
+
+    // TODO this comment
+    private void lineCleared(HashSet<GameBlockCoordinate> blocksToBeCleared) {
+        // TODO this logger
+        // logger.info("Block clicked: {}", block);
+
+        if(lineClearedListener != null) {
+            lineClearedListener.handle(blocksToBeCleared);
+        }
     }
 
     /**

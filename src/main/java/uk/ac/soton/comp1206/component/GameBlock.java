@@ -1,5 +1,6 @@
 package uk.ac.soton.comp1206.component;
 
+import javafx.animation.AnimationTimer;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
@@ -116,6 +117,43 @@ public class GameBlock extends Canvas {
             //If the block is not empty, paint with the colour represented by the value
             paintColor(COLOURS[value.get()]);
         }
+    }
+
+    // TODO comment this
+    public void fadeOut() {
+        var FADE_DURATION = 1.0; // Duration of the fade effect in seconds
+        final double[] fadeProgress = {0.0};
+
+        AnimationTimer timer = new AnimationTimer() {
+            private long startTime = -1; // Start time of the animation
+
+            @Override
+            public void handle(long now) {
+                if (startTime == -1) {
+                    startTime = now; // Set the start time when the animation begins
+                }
+
+                // Calculate the fade progress based on the elapsed time
+                fadeProgress[0] = (now - startTime) / (FADE_DURATION * 1e9);
+
+                if (fadeProgress[0] >= 1.0) {
+                    fadeProgress[0] = 1.0; // Ensure fade progress doesn't exceed 1.0
+                    stop(); // Stop the animation timer when the fade effect is complete
+                }
+
+                var gc = getGraphicsContext2D();
+
+                gc.clearRect(0, 0, width, height); // Clear the canvas
+
+                // Draw the design from paintEmpty()
+                paintEmpty();
+
+                // Apply the green color with fading opacity
+                gc.setFill(Color.rgb(0, 255, 0, 1.0 - fadeProgress[0])); // Green color with opacity
+                gc.fillRoundRect(0, 0, width, height, 10, 10); // Fill the canvas with green color
+            }
+        };
+        timer.start();
     }
 
     /**

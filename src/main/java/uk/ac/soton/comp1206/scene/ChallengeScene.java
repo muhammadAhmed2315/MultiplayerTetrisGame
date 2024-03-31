@@ -97,6 +97,10 @@ public class ChallengeScene extends BaseScene {
             nextPieceBoard.displayPiece(nextGamePiece);
         }));
 
+        game.setOnLineClear(blocksToBeCleared -> {
+            board.fadeOut(blocksToBeCleared);
+        });
+
         Label levelHeading = new Label("Level");
         Label actualLevel = new Label("0");
         levelHeading.getStyleClass().add("heading");

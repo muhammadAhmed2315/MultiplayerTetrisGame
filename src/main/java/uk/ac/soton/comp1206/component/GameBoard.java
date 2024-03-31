@@ -1,7 +1,7 @@
 package uk.ac.soton.comp1206.component;
 
+import java.util.HashSet;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -194,11 +194,18 @@ public class GameBoard extends GridPane {
         // Add a mouse click handler to the block to trigger GameBoard blockClicked method
         block.setOnMouseClicked((event) -> {
             if (event.getButton() == MouseButton.PRIMARY) {
-                blockClicked(event, block);
+                blockClicked(block);
             }
         });
 
         return block;
+    }
+
+    // TODO this comment and rename the function?
+    public void fadeOut(HashSet<GameBlockCoordinate> coordinates) {
+        for (GameBlockCoordinate coordinate : coordinates) {
+            getBlock(coordinate.getX(), coordinate.getY()).fadeOut();
+        }
     }
 
     /**
@@ -230,10 +237,9 @@ public class GameBoard extends GridPane {
 
     /**
      * Triggered when a block is clicked. Call the attached listener.
-     * @param event mouse event
      * @param block block clicked on
      */
-    private void blockClicked(MouseEvent event, GameBlock block) {
+    private void blockClicked(GameBlock block) {
         logger.info("Block clicked: {}", block);
 
         if(blockClickedListener != null) {
