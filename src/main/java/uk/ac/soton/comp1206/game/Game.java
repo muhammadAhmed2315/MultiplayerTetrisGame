@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBlockCoordinate;
+import uk.ac.soton.comp1206.event.GameLoopListener;
 import uk.ac.soton.comp1206.event.LineClearedListener;
 import uk.ac.soton.comp1206.event.NextPieceListener;
 import uk.ac.soton.comp1206.utility.Multimedia;
@@ -44,6 +45,11 @@ public class Game {
      * Listener for handling when a line needs to be cleared
      */
     private LineClearedListener lineClearedListener;
+
+    /**
+     * Listener for handling the game timer being reset
+     */
+    private GameLoopListener gameLoopListener;
 
     /**
      * User score
@@ -105,6 +111,7 @@ public class Game {
         logger.info("Initialising game");
         gameTimer = Executors.newSingleThreadScheduledExecutor();
         gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
+        gameLoopListener.handle(getTimerDelay());
         nextPiece = spawnPiece();
         nextPiece();
     }
@@ -118,12 +125,17 @@ public class Game {
         if (livesRemaining.get() > 0) {
             Platform.runLater(() -> {
                 livesRemaining.set(livesRemaining.get() - 1);
+                Multimedia.switchAudioFile("lifelose.wav");
                 logger.info("Lives remaining: {}", livesRemaining.get());
                 nextPiece();
                 scoreMultiplier.set(1);
             });
         } else {
+            Platform.runLater(() -> {
+                livesRemaining.set(livesRemaining.get() - 1);
+            });
             logger.info("Game over");
+            Multimedia.switchAudioFile("explode.wav");
             gameTimer.shutdown();
         }
     }
@@ -197,6 +209,14 @@ public class Game {
             if (gameLevel.intValue() != oldGameLevel) {
                 Multimedia.switchAudioFile("level.wav");
             }
+            // Resets the timer to 0 and starts it again if the user correctly places a piece
+            // Timer is set to a new timer delay (in case the timer delay has changed)
+            gameTimer.shutdownNow();
+            gameTimer = Executors.newSingleThreadScheduledExecutor();
+            gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
+            if (gameLoopListener != null) {
+                gameLoopListener.handle(getTimerDelay());
+            }
         } else {
             scoreMultiplier.set(1);
         }
@@ -268,6 +288,9 @@ public class Game {
             gameTimer.shutdownNow();
             gameTimer = Executors.newSingleThreadScheduledExecutor();
             gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
+            if (gameLoopListener != null) {
+                gameLoopListener.handle(getTimerDelay());
+            }
 
             grid.playPiece(currentPiece, x, y);
             nextPiece();
@@ -305,6 +328,10 @@ public class Game {
         if(lineClearedListener != null) {
             lineClearedListener.handle(blocksToBeCleared);
         }
+    }
+
+    public void setGameLoopListener(GameLoopListener gameLoopListener) {
+        this.gameLoopListener = gameLoopListener;
     }
 
     /**
@@ -357,11 +384,9 @@ public class Game {
 
     /**
      * Get number of lives user has remaining
-      * @return number of lives user has remaining
+     * @return number of lives user has remaining
      */
     public SimpleIntegerProperty getLivesRemaining() {
         return livesRemaining;
     }
-
-
 }

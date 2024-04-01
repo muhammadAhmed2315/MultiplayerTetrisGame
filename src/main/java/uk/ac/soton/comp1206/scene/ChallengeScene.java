@@ -1,5 +1,8 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -8,8 +11,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +69,7 @@ public class ChallengeScene extends BaseScene {
         mainPane.setCenter(board);
 
         // Bar at the top of the screen showing the score on the left and the lives remaining
-        // on the left
+        // on the right
         // HBox containing score and lives
         Label scoreHeading = new Label("Score");
         Label actualScore = new Label("0");
@@ -113,10 +120,43 @@ public class ChallengeScene extends BaseScene {
         Bindings.bindBidirectional(actualLives.textProperty(), game.getLivesRemaining(), new NumberStringConverter());
         Bindings.bindBidirectional(actualMultiplier.textProperty(), game.getScoreMultiplier(), new NumberStringConverter());
 
-        // Set the margins or spacing between the subcomponents
+        actualLives.textProperty().addListener((observableValue, oldValue, newValue) -> {
+            if (newValue.equals("-1")) {
+                endGame();
+                gameWindow.startMenu();
+            }
+        });
+
+        // Timer bar at the bottom of the screen
+        Rectangle rectangle = new Rectangle(gameWindow.getWidth(), (double) gameWindow.getHeight() / 30);
+        rectangle.setFill(Color.GREEN);
+        game.setGameLoopListener((event) -> {
+            Timeline timeline = new Timeline();
+            timeline.getKeyFrames().addAll(
+                new KeyFrame(Duration.ZERO,
+                    new KeyValue(rectangle.widthProperty(), gameWindow.getWidth()),
+                    new KeyValue(rectangle.fillProperty(), Color.GREEN)
+                ),
+                new KeyFrame(
+                    Duration.millis(event / 2), new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() / 2),
+                    new KeyValue(rectangle.fillProperty(), Color.YELLOWGREEN)
+                ),
+                new KeyFrame(
+                    Duration.millis(event), new KeyValue(rectangle.widthProperty(), 0),
+                    new KeyValue(rectangle.fillProperty(), Color.RED)
+                )
+            );
+            timeline.setCycleCount(Integer.MAX_VALUE);
+            timeline.play();
+        });
+        Region bottomSpacer = new Region();
+        bottomSpacer.setPrefHeight(5); // Set the desired padding height
+        VBox timerVBox = new VBox(rectangle, bottomSpacer);
+
         topBar.setSpacing(10); // Set spacing between the subcomponents
         mainPane.setTop(topBar);
         mainPane.setRight(rightBar);
+        mainPane.setBottom(timerVBox);
 
         // Set what function is executed when a block, the main GameBoard, or the two PieceBoards
         // are clicked
