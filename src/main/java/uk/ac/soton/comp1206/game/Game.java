@@ -2,6 +2,10 @@ package uk.ac.soton.comp1206.game;
 
 import java.util.HashSet;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,6 +66,11 @@ public class Game {
     private final SimpleIntegerProperty livesRemaining = new SimpleIntegerProperty(3);
 
     /**
+     * Game timer which counts down how long the user has left to play a piece
+     */
+    private ScheduledExecutorService gameTimer;
+
+    /**
      * The grid model linked to the game
      */
     protected final Grid grid;
@@ -94,8 +103,37 @@ public class Game {
      */
     public void initialiseGame() {
         logger.info("Initialising game");
+        gameTimer = Executors.newSingleThreadScheduledExecutor();
+        gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
         nextPiece = spawnPiece();
         nextPiece();
+    }
+
+    /**
+     * Method that is repeatedly called by the game loop. Handles the logic for what happens when
+     * the user doesn't play a piece within the given time.
+     */
+    private void gameLoop() {
+        logger.info("Game loop triggered");
+        if (livesRemaining.get() > 0) {
+            Platform.runLater(() -> {
+                livesRemaining.set(livesRemaining.get() - 1);
+                logger.info("Lives remaining: {}", livesRemaining.get());
+                nextPiece();
+                scoreMultiplier.set(1);
+            });
+        } else {
+            logger.info("Game over");
+            gameTimer.shutdown();
+        }
+    }
+
+    /**
+     * Calculates how long the user has to play a piece depending on the level
+     * @return how long the user has to play a piece
+     */
+    private int getTimerDelay() {
+        return 12000 - (500 * gameLevel.intValue());
     }
 
     /**
@@ -164,6 +202,9 @@ public class Game {
         }
     }
 
+    /**
+     * Rotates the current piece 90 degrees clockwise
+     */
     public void rotateCurrentPiece() {
         Multimedia.switchAudioFile("rotate.wav");
         currentPiece.rotate();
@@ -221,6 +262,13 @@ public class Game {
         if (grid.canPlayPiece(currentPiece, x, y)) {
             // Can play the piece
             Multimedia.switchAudioFile("place.wav");
+
+            // Resets the timer to 0 and starts it again if the user correctly places a piece
+            // Timer is set to a new timer delay (in case the timer delay has changed)
+            gameTimer.shutdownNow();
+            gameTimer = Executors.newSingleThreadScheduledExecutor();
+            gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
+
             grid.playPiece(currentPiece, x, y);
             nextPiece();
             afterPiece();
