@@ -9,8 +9,13 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.App;
+import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.network.Communicator;
-import uk.ac.soton.comp1206.scene.*;
+import uk.ac.soton.comp1206.scene.BaseScene;
+import uk.ac.soton.comp1206.scene.ChallengeScene;
+import uk.ac.soton.comp1206.scene.InstructionsScene;
+import uk.ac.soton.comp1206.scene.MenuScene;
+import uk.ac.soton.comp1206.scene.ScoresScene;
 
 /**
  * The GameWindow is the single window for the game where everything takes place. To move between screens in the game,
@@ -91,7 +96,12 @@ public class GameWindow {
     public void startInstructions() { loadScene(new InstructionsScene(this)); }
 
     /**
-     * Setup the default settings for the stage itself (the window), such as the title and minimum width and height.
+     * Display the scores scene
+     */
+    public void startScores(Game game) { loadScene(new ScoresScene(this, game)); };
+
+    /**
+     * Set up the default settings for the stage itself (the window), such as the title and minimum width and height.
      */
     public void setupStage() {
         stage.setTitle("TetrECS");

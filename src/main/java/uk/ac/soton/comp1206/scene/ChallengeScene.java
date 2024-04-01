@@ -122,8 +122,8 @@ public class ChallengeScene extends BaseScene {
 
         actualLives.textProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue.equals("-1")) {
-                endGame();
-                gameWindow.startMenu();
+                gameWindow.startScores(game);
+                //endGame(); TODO removing this for now, figure it out later
             }
         });
 
