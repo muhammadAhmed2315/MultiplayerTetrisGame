@@ -1,19 +1,24 @@
 package uk.ac.soton.comp1206.scene;
 
+import java.io.*;
 import java.util.ArrayList;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.component.ScoresList;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
@@ -64,7 +69,7 @@ public class ScoresScene extends BaseScene {
         contentVBox.setAlignment(Pos.CENTER);
         challengePane.getChildren().add(contentVBox);
 
-        var imageFilePath = InstructionsScene.class.getResource("/images/" + "TetrECS.png").toExternalForm();
+        var imageFilePath = ScoresScene.class.getResource("/images/" + "TetrECS.png").toExternalForm();
         Image image = new Image(imageFilePath);
         ImageView imageView = new ImageView(image);
         imageView.setPreserveRatio(true);
@@ -79,7 +84,30 @@ public class ScoresScene extends BaseScene {
         Label highScoresHeading = new Label("High Scores");
         highScoresHeading.getStyleClass().add("heading");
 
-        contentVBox.getChildren().addAll(imageView, gameOverHeading, highScoresHeading);
+        // Scores list
+        loadScores();
+        ScoresList scoresList = new ScoresList(localScores);
+        scoresList.scoresProperty().bind(localScores);
+
+        contentVBox.getChildren().addAll(imageView, gameOverHeading, highScoresHeading, scoresList);
+    }
+
+    // TODO this comment
+    public void loadScores() {
+        var inputStream = ScoresScene.class.getResourceAsStream("/scores.txt");
+
+        if (inputStream == null) {
+            throw new RuntimeException("File scores.txt not found in the resources directory");
+        }
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                localScores.add(new Pair(line.split(":")[0], line.split(":")[1]));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -87,16 +115,19 @@ public class ScoresScene extends BaseScene {
      */
     @Override
     public void initialise() {
-        // Add keyboard listener to the scene
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            switch (event.getCode()) {
-                case ESCAPE:
-                    logger.info("Escape key pressed");
-                    gameWindow.startMenu();
-                    break;
-                default:
-                    logger.info("Key pressed: {}", event.getText());
-            }
+    // Add keyboard listener to the scene
+    scene.addEventHandler(
+        KeyEvent.KEY_PRESSED,
+        event -> {
+          switch (event.getCode()) {
+            case ESCAPE:
+              logger.info("Escape key pressed");
+              gameWindow.startMenu();
+              break;
+            default:
+              logger.info("Key pressed: {}", event.getText());
+          }
         });
     }
+
 }

@@ -39,6 +39,7 @@ public class Multimedia {
                 var filePath = Multimedia.class.getResource("/sounds/" + fileName).toExternalForm();
                 Media sound = new Media(filePath);
                 audioPlayer = new MediaPlayer(sound);
+                audioPlayer.setVolume(0); // TODO change this
                 audioPlayer.play();
                 logger.info("Sound effect {} successfully played", fileName);
             } catch (Exception e) {
@@ -62,6 +63,7 @@ public class Multimedia {
             Media sound = new Media(filePath);
             musicPlayer = new MediaPlayer(sound);
             musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+            musicPlayer.setVolume(0); // TODO change this
             musicPlayer.play();
             logger.info("Background music {} successfully played", fileName);
         } catch (Exception e) {
