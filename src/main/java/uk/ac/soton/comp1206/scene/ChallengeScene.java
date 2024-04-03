@@ -7,13 +7,7 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -27,6 +21,10 @@ import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -96,6 +94,18 @@ public class ChallengeScene extends BaseScene {
         actualMultiplier.getStyleClass().add("level");
         VBox multiplierVBox = new VBox(multiplierHeading, actualMultiplier);
 
+        Label highScoreHeading = new Label("High Score");
+        Label actualHighScore = new Label(Integer.toString(getHighScore()));
+        highScoreHeading.getStyleClass().add("heading");
+        actualHighScore.getStyleClass().add("level");
+        VBox highScoreVBox = new VBox(highScoreHeading, actualHighScore);
+
+        game.getUserScore().addListener((ObservableValue, oldValue, newValue) -> {
+            if (game.getUserScore().intValue() > Integer.valueOf(actualHighScore.getText())) {
+                actualHighScore.setText(Integer.toString(game.getUserScore().intValue()));
+            }
+        });
+
         PieceBoard currentPieceBoard = new PieceBoard(3, 3, 132, 132, true);
         PieceBoard nextPieceBoard = new PieceBoard(3, 3, 80, 80, false);
 
@@ -112,7 +122,7 @@ public class ChallengeScene extends BaseScene {
         actualLevel.getStyleClass().add("level");
         VBox levelVBox = new VBox(levelHeading, actualLevel);
 
-        VBox rightBar = new VBox(multiplierVBox, currentPieceBoard, nextPieceBoard, levelVBox);
+        VBox rightBar = new VBox(multiplierVBox, highScoreVBox, currentPieceBoard, nextPieceBoard, levelVBox);
         rightBar.setAlignment(Pos.CENTER);
 
         Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
@@ -123,7 +133,7 @@ public class ChallengeScene extends BaseScene {
         actualLives.textProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue.equals("-1")) {
                 gameWindow.startScores(game);
-                //endGame(); TODO removing this for now, figure it out later
+                endGame();
             }
         });
 
@@ -139,7 +149,7 @@ public class ChallengeScene extends BaseScene {
                 ),
                 new KeyFrame(
                     Duration.millis(event / 2), new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() / 2),
-                    new KeyValue(rectangle.fillProperty(), Color.YELLOWGREEN)
+                    new KeyValue(rectangle.fillProperty(), Color.YELLOW)
                 ),
                 new KeyFrame(
                     Duration.millis(event), new KeyValue(rectangle.widthProperty(), 0),
@@ -174,6 +184,27 @@ public class ChallengeScene extends BaseScene {
                 Multimedia.getMusicPlayer().stop();
                 Multimedia.playBackgroundMusic("game.wav");
             });
+        }
+
+    }
+
+    private int getHighScore() {
+        // Get top high score
+        var inputStream = ScoresScene.class.getResourceAsStream("/scores.txt");
+
+        if (inputStream == null) {
+            throw new RuntimeException("File scores.txt not found in the resources directory");
+        }
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line = br.readLine();
+            if (line != null) {
+                return Integer.valueOf(line.split(":")[1]);
+            } else {
+                return 0;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -215,7 +246,7 @@ public class ChallengeScene extends BaseScene {
      */
     public void endGame() {
         logger.info("Ending the game");
-        // TODO is this enough?
+        game.gameTimerShutdown();
         game = null;
     }
 

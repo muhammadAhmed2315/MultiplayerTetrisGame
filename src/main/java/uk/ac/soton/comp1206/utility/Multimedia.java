@@ -1,11 +1,12 @@
 package uk.ac.soton.comp1206.utility;
 
-import java.util.HashMap;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.scene.MenuScene;
+
+import java.util.HashMap;
 
 public class Multimedia {
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
@@ -39,7 +40,7 @@ public class Multimedia {
                 var filePath = Multimedia.class.getResource("/sounds/" + fileName).toExternalForm();
                 Media sound = new Media(filePath);
                 audioPlayer = new MediaPlayer(sound);
-                audioPlayer.setVolume(0); // TODO change this
+                //audioPlayer.setVolume(0);
                 audioPlayer.play();
                 logger.info("Sound effect {} successfully played", fileName);
             } catch (Exception e) {
@@ -63,7 +64,7 @@ public class Multimedia {
             Media sound = new Media(filePath);
             musicPlayer = new MediaPlayer(sound);
             musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-            musicPlayer.setVolume(0); // TODO change this
+            //musicPlayer.setVolume(0);
             musicPlayer.play();
             logger.info("Background music {} successfully played", fileName);
         } catch (Exception e) {

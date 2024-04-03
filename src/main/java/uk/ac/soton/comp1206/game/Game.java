@@ -1,10 +1,5 @@
 package uk.ac.soton.comp1206.game;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +10,12 @@ import uk.ac.soton.comp1206.event.GameLoopListener;
 import uk.ac.soton.comp1206.event.LineClearedListener;
 import uk.ac.soton.comp1206.event.NextPieceListener;
 import uk.ac.soton.comp1206.utility.Multimedia;
+
+import java.util.HashSet;
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -141,11 +142,18 @@ public class Game {
     }
 
     /**
+     * Shuts down the game timer
+     */
+    public void gameTimerShutdown() {
+        gameTimer.shutdown();
+    }
+
+    /**
      * Calculates how long the user has to play a piece depending on the level
      * @return how long the user has to play a piece
      */
     private int getTimerDelay() {
-        return 1000 - (500 * gameLevel.intValue()); // TODO change 2000 -> 12000
+        return 12000 - (500 * gameLevel.intValue());
     }
 
     /**

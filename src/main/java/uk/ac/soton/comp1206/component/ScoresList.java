@@ -7,7 +7,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.util.Pair;
 
-// TODO this comment
+/**
+ * Specialised component for showing the list of high scores at the end of a game.
+ */
 public class ScoresList extends VBox {
   private final SimpleListProperty<Pair<String, Integer>> scores = new SimpleListProperty<>();
 
@@ -18,13 +20,23 @@ public class ScoresList extends VBox {
         });
     }
 
+    /**
+     * Updates the score list component if the scores list changes
+     */
     private void updateDisplay() {
         getChildren().clear();  // Clear existing score display
-        for (Pair<String, Integer> score : scores.get()) {
-            getChildren().add(new Label(score.toString()));
+        var temp = scores.get().subList(0, Math.min(10, scores.size()));
+        for (Pair<String, Integer> score : temp) {
+            var tempLabel = new Label(score.toString());
+            tempLabel.getStyleClass().add("scorelist");
+            getChildren().add(tempLabel);
         }
     }
 
+    /**
+     * Returns the scores list
+     * @return scores list
+     */
     public SimpleListProperty<Pair<String, Integer>> scoresProperty() {
         return this.scores;
     }
