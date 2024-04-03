@@ -10,6 +10,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Pair;
@@ -17,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.ScoresList;
 import uk.ac.soton.comp1206.game.Game;
+import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -29,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ScoresScene extends BaseScene {
 
@@ -51,6 +54,12 @@ public class ScoresScene extends BaseScene {
      */
     private boolean showInputUsernameScreen = false;
 
+    // TODO this comment
+    private SimpleListProperty<Pair<String, Integer>> remoteScores;
+
+    // TODO this comment
+    private Communicator communicator;
+
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
      *
@@ -69,15 +78,23 @@ public class ScoresScene extends BaseScene {
     public void build() {
         logger.info("Building " + this.getClass().getName());
 
-        ArrayList<Pair<String, Integer>> scores = new ArrayList<>();
+        communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700"); // DO THIS1 is ws required?
 
-        ObservableList<Pair<String, Integer>> observableScores = FXCollections.observableArrayList(scores);
+        ArrayList<Pair<String, Integer>> localScoresArrayList = new ArrayList<>();
+        ArrayList<Pair<String, Integer>> remoteScoresArrayList = new ArrayList<>();
 
-        localScores = new SimpleListProperty<>(observableScores);
+
+        ObservableList<Pair<String, Integer>> observableLocalScores = FXCollections.observableArrayList(localScoresArrayList);
+        ObservableList<Pair<String, Integer>> observableRemoteScores = FXCollections.observableArrayList(remoteScoresArrayList);
+
+
+        localScores = new SimpleListProperty<>(observableLocalScores);
+        remoteScores = new SimpleListProperty<>(observableRemoteScores);
 
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
         loadScores();
+        loadOnlineScores();
 
         var challengePane = new StackPane();
         challengePane.setMaxWidth(gameWindow.getWidth());
@@ -99,7 +116,6 @@ public class ScoresScene extends BaseScene {
         // Game Over heading
         Label gameOverHeading = new Label("Game Over");
         gameOverHeading.getStyleClass().add("score");
-
 
         // if there are no high scores and user gets a score higher than 0
         int counter = 0;
@@ -147,22 +163,24 @@ public class ScoresScene extends BaseScene {
     }
 
     /**
-     * Shows the ScoresList component at the bottom of the screen
-     * @param contentVBox VBox to add components to
-     * @param imageView image to show on top of the screen
-     * @param gameOverHeading label that needs to be displayed
+     * Request online high scores from the server and store them in ScoresScene.remoteScores
      */
-    public void showScoresList(VBox contentVBox, ImageView imageView, Label gameOverHeading) {
-        // High Scores heading
-        Label highScoresHeading = new Label("High Scores");
-        highScoresHeading.getStyleClass().add("heading");
+    private void loadOnlineScores() {
+        communicator.addListener((message) -> {
+            String messageWithoutPrefix = message.split(" ")[1];
+            String[] scoresList = messageWithoutPrefix.split("\n");
+            logger.info("{}", Arrays.toString(scoresList));
+            for (int i = 0; i < 10; i++) {
+                logger.info("{}", i);
+                var scorePair = scoresList[i];
+                //logger.info("Adding to remoteScores: {}:{}", scorePair.split(":")[0], scorePair.split(":")[1]);
+                remoteScores.add(new Pair(scorePair.split(":")[0], Integer.valueOf(scorePair.split(":")[1])));
 
-        // Scores list
-        ScoresList scoresList = new ScoresList(localScores);
-        scoresList.scoresProperty().bind(localScores);
-
-        contentVBox.getChildren().clear();
-        contentVBox.getChildren().addAll(imageView, gameOverHeading, highScoresHeading, scoresList);
+            }
+        });
+        communicator.send("HISCORES");
+        // Receive: HISCORES <Name>:<Score>\n<Name>:<Score>\n...
+        // Description: Get the top high scores list
     }
 
     /**
@@ -184,6 +202,38 @@ public class ScoresScene extends BaseScene {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Shows the ScoresList component at the bottom of the screen
+     * @param contentVBox VBox to add components to
+     * @param imageView image to show on top of the screen
+     * @param gameOverHeading label that needs to be displayed
+     */
+    public void showScoresList(VBox contentVBox, ImageView imageView, Label gameOverHeading) {
+        // Local high scores heading
+        Label localHighScoresHeading = new Label("Local Scores");
+        localHighScoresHeading.getStyleClass().add("heading");
+
+        // Scores list
+        ScoresList localScoresList = new ScoresList(localScores);
+        localScoresList.scoresProperty().bind(localScores);
+
+        // Online high scores heading
+        Label onlineHighScoresHeading = new Label("Online Scores");
+        onlineHighScoresHeading.getStyleClass().add("heading");
+
+        // Scores list
+        ScoresList onlineScoresList = new ScoresList(remoteScores);
+        onlineScoresList.scoresProperty().bind(remoteScores);
+
+        // HBox to hold both lists
+        VBox localScoresVBox = new VBox(localHighScoresHeading, localScoresList);
+        VBox onlineScoresVBox = new VBox(onlineHighScoresHeading, onlineScoresList);
+        HBox localAndRemoteScores = new HBox(localScoresVBox, onlineScoresVBox);
+
+        contentVBox.getChildren().clear();
+        contentVBox.getChildren().addAll(imageView, gameOverHeading, localAndRemoteScores);
     }
 
     /**
