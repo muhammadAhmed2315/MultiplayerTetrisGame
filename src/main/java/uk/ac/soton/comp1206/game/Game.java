@@ -153,7 +153,7 @@ public class Game {
      * @return how long the user has to play a piece
      */
     private int getTimerDelay() {
-        return 1000 - (500 * gameLevel.intValue());
+        return 12000 - (500 * gameLevel.intValue()); // TODO 12000
     }
 
     /**
@@ -163,6 +163,7 @@ public class Game {
         // loop through rows
         HashSet<GameBlockCoordinate> blocksToBeCleared = new HashSet<>();
         int lineCounter = 0;
+
         // looking for horizontal lines
         for (int i = 0; i < rows; i++) {
             int rowSum = 0;
@@ -172,15 +173,14 @@ public class Game {
                 }
             }
             // if a line is found
-            if (rowSum >= 5) {
-                blocksToBeCleared.add(new GameBlockCoordinate(i, 0));
-                blocksToBeCleared.add(new GameBlockCoordinate(i, 1));
-                blocksToBeCleared.add(new GameBlockCoordinate(i, 2));
-                blocksToBeCleared.add(new GameBlockCoordinate(i, 3));
-                blocksToBeCleared.add(new GameBlockCoordinate(i, 4));
+            if (rowSum >= rows) {
+                for (int temp = 0; temp < rows; temp++) {
+                    blocksToBeCleared.add(new GameBlockCoordinate(i, temp));
+                }
                 lineCounter++;
             }
         }
+
         // looking for vertical lines
         for (int i = 0; i < rows; i++) {
             int colSum = 0;
@@ -190,12 +190,10 @@ public class Game {
                 }
             }
             // if a line is found
-            if (colSum >= 5) {
-                blocksToBeCleared.add(new GameBlockCoordinate(0, i));
-                blocksToBeCleared.add(new GameBlockCoordinate(1, i));
-                blocksToBeCleared.add(new GameBlockCoordinate(2, i));
-                blocksToBeCleared.add(new GameBlockCoordinate(3, i));
-                blocksToBeCleared.add(new GameBlockCoordinate(4, i));
+            if (colSum >= cols) {
+                for (int temp = 0; temp < cols; temp++) {
+                    blocksToBeCleared.add(new GameBlockCoordinate(temp, i));
+                }
                 lineCounter++;
             }
         }
@@ -206,17 +204,19 @@ public class Game {
             for (GameBlockCoordinate x : blocksToBeCleared) {
                 grid.set(x.getX(), x.getY(), 0);
             }
-            // Find value to update the score by
+            // Find value to update the score by and increase the score
             int oldGameLevel = gameLevel.intValue();
             int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
             userScore.set(userScore.get() + incScoreBy);
             logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
             scoreMultiplier.set(scoreMultiplier.get() + 1);
-            // Perhaps this should be outside the if statement?
             gameLevel.set(userScore.get() / 1000);
+
+            // If levelled up, play the level up sound
             if (gameLevel.intValue() != oldGameLevel) {
                 Multimedia.switchAudioFile("level.wav");
             }
+
             // Resets the timer to 0 and starts it again if the user correctly places a piece
             // Timer is set to a new timer delay (in case the timer delay has changed)
             gameTimer.shutdownNow();
@@ -397,4 +397,5 @@ public class Game {
     public SimpleIntegerProperty getLivesRemaining() {
         return livesRemaining;
     }
+
 }

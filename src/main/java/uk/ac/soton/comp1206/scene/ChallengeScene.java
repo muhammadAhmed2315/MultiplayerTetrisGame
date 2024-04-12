@@ -33,6 +33,7 @@ public class ChallengeScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
     protected Game game;
+    protected GameBoard board;
 
     /**
      * Create a new Single Player challenge scene
@@ -63,7 +64,7 @@ public class ChallengeScene extends BaseScene {
         var mainPane = new BorderPane();
         challengePane.getChildren().add(mainPane);
 
-        var board = new GameBoard(game.getGrid(),gameWindow.getWidth()/2,gameWindow.getWidth()/2);
+        board = new GameBoard(game.getGrid(),gameWindow.getWidth()/2,gameWindow.getWidth()/2);
         mainPane.setCenter(board);
 
         // Bar at the top of the screen showing the score on the left and the lives remaining
@@ -262,15 +263,45 @@ public class ChallengeScene extends BaseScene {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             switch (event.getCode()) {
                 case ESCAPE:
-                    logger.info("Escape key pressed");
                     endGame();
                     gameWindow.startMenu();
                     break;
                 case UP:
+                case W:
+                    board.moveKeyboardAimUp();
+                    break;
+                case DOWN:
+                case S:
+                    board.moveKeyboardAimDown();
+                    break;
+                case RIGHT:
+                case D:
+                    board.moveKeyboardAimRight();
+                    break;
+                case LEFT:
+                case A:
+                    board.moveKeyboardAimLeft();
+                    break;
+                case E:
+                case C:
+                case CLOSE_BRACKET:
                     game.rotateCurrentPiece();
                     break;
-                default:
-                    logger.info("Key pressed: {}", event.getText());
+                case Q:
+                case Z:
+                case OPEN_BRACKET:
+                    game.rotateCurrentPiece();
+                    game.rotateCurrentPiece();
+                    game.rotateCurrentPiece();
+                    break;
+                case ENTER:
+                case X:
+                    board.placeKeyboardAim();
+                    break;
+                case SPACE:
+                case R:
+                    game.swapCurrentPiece();
+                    break;
             }
         });
     }

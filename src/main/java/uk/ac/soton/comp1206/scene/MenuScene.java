@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -79,7 +80,14 @@ public class MenuScene extends BaseScene {
      */
     @Override
     public void initialise() {
-
+        // Add keyboard listener to the scene
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            switch (event.getCode()) {
+                case ESCAPE:
+                    gameWindow.startMenu();
+                    break;
+            }
+        });
     }
 
     /**

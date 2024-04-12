@@ -104,11 +104,8 @@ public class InstructionsScene extends BaseScene {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             switch (event.getCode()) {
                 case ESCAPE:
-                    logger.info("Escape key pressed");
                     gameWindow.startMenu();
                     break;
-                default:
-                    logger.info("Key pressed: {}", event.getText());
             }
         });
     }

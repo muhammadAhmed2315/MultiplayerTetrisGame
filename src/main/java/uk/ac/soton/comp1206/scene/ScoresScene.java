@@ -294,11 +294,8 @@ public class ScoresScene extends BaseScene {
             event -> {
               switch (event.getCode()) {
                 case ESCAPE:
-                  logger.info("Escape key pressed");
                   gameWindow.startMenu();
                   break;
-                default:
-                  logger.info("Key pressed: {}", event.getText());
               }
             });
         }

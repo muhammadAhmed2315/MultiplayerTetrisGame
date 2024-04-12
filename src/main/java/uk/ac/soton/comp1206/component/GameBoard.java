@@ -1,6 +1,5 @@
 package uk.ac.soton.comp1206.component;
 
-import java.util.HashSet;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import org.apache.logging.log4j.LogManager;
@@ -8,6 +7,8 @@ import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.event.BlockClickedListener;
 import uk.ac.soton.comp1206.event.RightClickedListener;
 import uk.ac.soton.comp1206.game.Grid;
+
+import java.util.HashSet;
 
 /**
  * A GameBoard is a visual component to represent the visual GameBoard.
@@ -69,6 +70,15 @@ public class GameBoard extends GridPane {
      */
     private RightClickedListener rightClickedListener;
 
+    /**
+     * Coordinate for where the user is aiming using the keyboard
+     */
+    private GameBlockCoordinate keyboardAim;
+
+    /**
+     * Coordinate for where the user is aiming using the mouse
+     */
+    private GameBlockCoordinate mouseAim;
 
     /**
      * Create a new GameBoard, based off a given grid, with a visual width and height.
@@ -85,6 +95,8 @@ public class GameBoard extends GridPane {
         // This constructor for GameBoard is used for the main GameBoard, which we want hovering
         // effects for
         hoverEnabled = true;
+        keyboardAim = new GameBlockCoordinate(0, 0);
+        mouseAim = new GameBlockCoordinate(0, 0);
 
         //Build the GameBoard
         build();
@@ -158,10 +170,13 @@ public class GameBoard extends GridPane {
                 if (hoverEnabled) {
                     // Add a mouse handler for once the block is hovered
                     temp_block.setOnMouseEntered((event) -> {
+                        blocks[keyboardAim.getX()][keyboardAim.getY()].offHover();
                         temp_block.onHover();
+                        mouseAim = new GameBlockCoordinate(temp_block.getX(), temp_block.getY());
                     });
                     // Add a mouse handler for once the hovered block is no longer hovered
                     temp_block.setOnMouseExited((event) -> {
+                        blocks[keyboardAim.getX()][keyboardAim.getY()].offHover();
                         temp_block.offHover();
                     });
                 }
@@ -244,6 +259,46 @@ public class GameBoard extends GridPane {
 
         if(blockClickedListener != null) {
             blockClickedListener.blockClicked(block);
+        }
+    }
+
+    public void placeKeyboardAim() {
+        blockClicked(blocks[keyboardAim.getX()][keyboardAim.getY()]);
+    }
+
+    public void moveKeyboardAimUp() {
+        if (keyboardAim.getY() != 0) {
+            blocks[mouseAim.getX()][mouseAim.getY()].offHover();
+            blocks[keyboardAim.getX()][keyboardAim.getY()].offHover();
+            keyboardAim = keyboardAim.subtract(0, 1);
+            blocks[keyboardAim.getX()][keyboardAim.getY()].onHover();
+        }
+    }
+
+    public void moveKeyboardAimDown() {
+        if (keyboardAim.getY() != 4) {
+            blocks[mouseAim.getX()][mouseAim.getY()].offHover();
+            blocks[keyboardAim.getX()][keyboardAim.getY()].offHover();
+            keyboardAim = keyboardAim.add(0, 1);
+            blocks[keyboardAim.getX()][keyboardAim.getY()].onHover();
+        }
+    }
+
+    public void moveKeyboardAimRight() {
+        if (keyboardAim.getX() != 4) {
+            blocks[mouseAim.getX()][mouseAim.getY()].offHover();
+            blocks[keyboardAim.getX()][keyboardAim.getY()].offHover();
+            keyboardAim = keyboardAim.add(1, 0);
+            blocks[keyboardAim.getX()][keyboardAim.getY()].onHover();
+        }
+    }
+
+    public void moveKeyboardAimLeft() {
+        if (keyboardAim.getX() != 0) {
+            blocks[mouseAim.getX()][mouseAim.getY()].offHover();
+            blocks[keyboardAim.getX()][keyboardAim.getY()].offHover();
+            keyboardAim = keyboardAim.subtract(1, 0);
+            blocks[keyboardAim.getX()][keyboardAim.getY()].onHover();
         }
     }
 
