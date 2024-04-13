@@ -78,7 +78,7 @@ public class ScoresScene extends BaseScene {
     public void build() {
         logger.info("Building " + this.getClass().getName());
 
-        communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700"); // DO THIS1 is ws required?
+        communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
         ArrayList<Pair<String, Integer>> localScoresArrayList = new ArrayList<>();
         ArrayList<Pair<String, Integer>> remoteScoresArrayList = new ArrayList<>();
@@ -179,8 +179,18 @@ public class ScoresScene extends BaseScene {
             }
         });
         communicator.send("HISCORES");
+        // Send: HISCORES
         // Receive: HISCORES <Name>:<Score>\n<Name>:<Score>\n...
         // Description: Get the top high scores list
+        // Send: HISCORES UNIQUE
+        // Receive: HISCORES <Name>:<Score>\n<Name>:<Score>\n...
+        // Description: Only include each unique player name for a more varied high score list
+        // Send: HISCORES DEFAULT
+        // Receive: HISCORES <Name>:<Score>\n<Name>:<Score>\n...
+        // Description: Include a default high score list. Good for testing
+        // Send: HISCORE <Name>:<Score>
+        // Description: Submit a new high score. Do not cheat - we will know!
+        // Receive: NEWSCORE <Name>:<Score>
     }
 
     /**

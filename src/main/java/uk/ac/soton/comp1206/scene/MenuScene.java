@@ -62,7 +62,7 @@ public class MenuScene extends BaseScene {
 
         //Bind the button actions to the necessary methods
         singlePlayerButton.setOnAction(this::startGame);
-        // TODO: multiplayer button
+        multiPlayerButton.setOnAction(this::startLobbyScene);
         instructionsButton.setOnAction(this::startInstructionScene);
         exitButton.setOnAction((event) -> Platform.exit());
 
@@ -90,16 +90,19 @@ public class MenuScene extends BaseScene {
         });
     }
 
-    /**
-     * Handle when the Start Game button is pressed
-     * @param event event
-     */
+    // TODO this comment
     private void startGame(ActionEvent event) {
         gameWindow.startChallenge();
     }
 
+    // TODO this comment
     private void startInstructionScene(ActionEvent event) {
         gameWindow.startInstructions();
+    }
+
+    // TODO this comment
+    private void startLobbyScene(ActionEvent event) {
+        gameWindow.startLobby();
     }
 
 }

@@ -153,7 +153,7 @@ public class Game {
      * @return how long the user has to play a piece
      */
     private int getTimerDelay() {
-        return 12000 - (500 * gameLevel.intValue()); // TODO 12000
+        return 1000 - (500 * gameLevel.intValue()); // TODO 12000
     }
 
     /**
