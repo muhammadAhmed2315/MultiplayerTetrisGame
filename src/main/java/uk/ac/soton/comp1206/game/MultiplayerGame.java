@@ -9,13 +9,17 @@ import uk.ac.soton.comp1206.component.GameBlockCoordinate;
 import uk.ac.soton.comp1206.event.GameLoopListener;
 import uk.ac.soton.comp1206.event.LineClearedListener;
 import uk.ac.soton.comp1206.event.NextPieceListener;
+import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.utility.Multimedia;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
@@ -67,19 +71,27 @@ public class MultiplayerGame extends Game {
      */
     private ScheduledExecutorService gameTimer;
 
+    // TODO this comment
+    private Queue<Integer> nextPiecesQueue = new LinkedList<>();
+
     /**
      * The grid model linked to the game
      */
     private GamePiece currentPiece;
     private GamePiece nextPiece;
 
+    // TODO this comment
+    private Communicator communicator;
+
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
      * @param cols number of columns
      * @param rows number of rows
      */
-    public MultiplayerGame(int cols, int rows) {
+    public MultiplayerGame(int cols, int rows, Communicator communicator) {
         super(cols, rows);
+
+        this.communicator = communicator;
     }
 
     /**
@@ -95,11 +107,30 @@ public class MultiplayerGame extends Game {
      */
     public void initialiseGame() {
         logger.info("Initialising multiplayer game");
+
+        AtomicInteger piecesReceived = new AtomicInteger(0);
+
+        communicator.addListener((message) -> {
+            if (message.startsWith("PIECE ")) {
+                Platform.runLater(() -> {
+                    nextPiecesQueue.offer(Integer.valueOf(message.substring(6)));
+                    if (piecesReceived.incrementAndGet() == 5) {
+                        Platform.runLater(() -> {
+                            nextPiece = spawnPiece();
+                            nextPiece();
+                        });
+                    }
+                });
+            }
+        });
+
+        for (int i = 0; i < 5; i++) {
+            communicator.send("PIECE");
+        }
+
         gameTimer = Executors.newSingleThreadScheduledExecutor();
         gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
         gameLoopListener.handle(getTimerDelay());
-        nextPiece = spawnPiece();
-        nextPiece();
     }
 
     /**
@@ -111,6 +142,7 @@ public class MultiplayerGame extends Game {
         if (livesRemaining.get() > 0) {
             Platform.runLater(() -> {
                 livesRemaining.set(livesRemaining.get() - 1);
+                communicator.send("LIVES " + livesRemaining.get());
                 Multimedia.switchAudioFile("lifelose.wav");
                 //logger.info("Lives remaining: {}", livesRemaining.get());
                 nextPiece();
@@ -119,6 +151,7 @@ public class MultiplayerGame extends Game {
         } else {
             Platform.runLater(() -> {
                 livesRemaining.set(livesRemaining.get() - 1);
+                communicator.send("DIE");
             });
             //logger.info("Game over");
             Multimedia.switchAudioFile("explode.wav");
@@ -252,15 +285,13 @@ public class MultiplayerGame extends Game {
     }
 
     /**
-     * Generates a new random piece
+     * Requests a randomly-generated piece from the server and returns the piece at the front of nextPiecesQueue
      * @return randomly-generated piece
      */
     public GamePiece spawnPiece() {
-        int maxPieces = GamePiece.PIECES;
-        int randomPiece = random.nextInt(maxPieces);
-        //logger.info("Picking random piece: {}", randomPiece);
-        var piece = GamePiece.createPiece(randomPiece);
-        return piece;
+        communicator.send("PIECE");
+        GamePiece temp = GamePiece.createPiece(nextPiecesQueue.poll());
+        return temp;
     }
 
     /**
@@ -288,6 +319,9 @@ public class MultiplayerGame extends Game {
             grid.playPiece(currentPiece, x, y);
             nextPiece();
             afterPiece();
+
+            communicator.send("BOARD " + grid.getFlattenedGrid());
+            communicator.send("SCORE " + userScore.intValue());
         } else {
             // Can't play the piece
             Multimedia.switchAudioFile("fail.wav");

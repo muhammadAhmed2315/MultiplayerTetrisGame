@@ -18,7 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.ScoresList;
 import uk.ac.soton.comp1206.game.Game;
-import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -56,9 +55,6 @@ public class ScoresScene extends BaseScene {
     // TODO this comment
     private SimpleListProperty<Pair<String, Integer>> remoteScores;
 
-    // TODO this comment
-    private Communicator communicator;
-
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
      *
@@ -76,9 +72,6 @@ public class ScoresScene extends BaseScene {
     @Override
     public void build() {
         //logger.info("Building " + this.getClass().getName());
-
-        logger.info("Connecting to the server from {}", this.getClass().getName());
-        communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
         ArrayList<Pair<String, Integer>> localScoresArrayList = new ArrayList<>();
         ArrayList<Pair<String, Integer>> remoteScoresArrayList = new ArrayList<>();
@@ -166,7 +159,7 @@ public class ScoresScene extends BaseScene {
      * Request online high scores from the server and store them in ScoresScene.remoteScores
      */
     private void loadOnlineScores() {
-        communicator.addListener((message) -> {
+        gameWindow.getCommunicator().addListener((message) -> {
             String messageWithoutPrefix = message.split(" ")[1];
             String[] scoresList = messageWithoutPrefix.split("\n");
             //logger.info("{}", Arrays.toString(scoresList));
@@ -178,7 +171,7 @@ public class ScoresScene extends BaseScene {
 
             }
         });
-        communicator.send("HISCORES");
+        gameWindow.getCommunicator().send("HISCORES");
         // Send: HISCORES
         // Receive: HISCORES <Name>:<Score>\n<Name>:<Score>\n...
         // Description: Get the top high scores list

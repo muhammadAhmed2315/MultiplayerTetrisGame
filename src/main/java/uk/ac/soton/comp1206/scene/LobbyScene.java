@@ -10,7 +10,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
@@ -22,8 +21,6 @@ import java.util.TimerTask;
 public class LobbyScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
-
-    private Communicator communicator;
 
     /**
      * Create a new scene, passing in the GameWindow the scene will be displayed in
@@ -41,9 +38,6 @@ public class LobbyScene extends BaseScene {
     @Override
     public void build() {
         //logger.info("Building " + this.getClass().getName());
-
-        logger.info("Connecting to the server from {}", this.getClass().getName());
-        communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
@@ -74,7 +68,7 @@ public class LobbyScene extends BaseScene {
         TextField newChannelNameTextField = new TextField();
         newChannelNameTextField.setVisible(false);
         newChannelNameTextField.setOnAction((event) -> {
-            communicator.send("CREATE " + newChannelNameTextField.getText());
+            gameWindow.getCommunicator().send("CREATE " + newChannelNameTextField.getText());
             newChannelNameTextField.clear();
             newChannelNameTextField.setVisible(false);
         });
@@ -121,9 +115,9 @@ public class LobbyScene extends BaseScene {
         messageInputField.setPromptText("Send a message");
         messageInputField.setOnAction((event) -> {
             if (messageInputField.getText().startsWith("/nick ")) {
-                communicator.send("NICK " + messageInputField.getText().split(" ")[1]);
+                gameWindow.getCommunicator().send("NICK " + messageInputField.getText().split(" ")[1]);
             } else {
-                communicator.send("MSG " + messageInputField.getText());
+                gameWindow.getCommunicator().send("MSG " + messageInputField.getText());
             }
             messageInputField.clear();
         });
@@ -142,12 +136,12 @@ public class LobbyScene extends BaseScene {
         contentVBox.getChildren().addAll(headingHBox, mainContentHBox);
 
         leaveGameButton.setOnMouseClicked((event) -> {
-            communicator.send("PART");
+            gameWindow.getCommunicator().send("PART");
             startGameButton.setVisible(false);
         });
 
         startGameButton.setOnMouseClicked((event) -> {
-            communicator.send("START");
+            gameWindow.getCommunicator().send("START");
         });
 
         // Create a Timer to request current channels from the server every 5 seconds
@@ -155,12 +149,12 @@ public class LobbyScene extends BaseScene {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                communicator.send("LIST");
+                gameWindow.getCommunicator().send("LIST");
             }
         }, 0, 5000); // 0 initial delay, 5000 ms period (5 seconds)
 
         // Listener for communications
-        communicator.addListener((message) -> {
+        gameWindow.getCommunicator().addListener((message) -> {
             if (message.startsWith("CHANNELS ")) {
                 // Updates channels list
                 message = message.split(" ")[1];
@@ -171,7 +165,7 @@ public class LobbyScene extends BaseScene {
                         Label channelNameHeading = new Label(channel);
                         channelNameHeading.getStyleClass().add("channelItem");
                         channelNameHeading.setOnMouseClicked((event) -> {
-                            communicator.send("JOIN " + channel);
+                            gameWindow.getCommunicator().send("JOIN " + channel);
                         });
                         channelsList.getChildren().add(channelNameHeading);
                     }
@@ -216,14 +210,11 @@ public class LobbyScene extends BaseScene {
                     messagesList.getChildren().add(messageLabel);
                 });
             } else if (message.equals("START")) {
-                communicator.clearListeners();
-                communicator = null;
                 Platform.runLater(() -> {
                     gameWindow.startMultiplayerGame();
                     timer.cancel();
                 });
             }
-
         });
 
 
@@ -239,8 +230,7 @@ public class LobbyScene extends BaseScene {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             switch (event.getCode()) {
                 case ESCAPE:
-                    communicator.send("QUIT");
-                    communicator.clearListeners();
+                    gameWindow.getCommunicator().send("QUIT");
                     gameWindow.startMenu();
                     break;
             }

@@ -178,4 +178,14 @@ public class Grid {
         return rows;
     }
 
+    public String getFlattenedGrid() {
+        String myGridString = "";
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                myGridString += grid[x][y].get() + " ";
+            }
+        }
+        return myGridString.trim();
+    }
+
 }
