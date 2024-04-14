@@ -28,7 +28,7 @@ public class MenuScene extends BaseScene {
      */
     public MenuScene(GameWindow gameWindow) {
         super(gameWindow);
-        logger.info("Creating Menu Scene");
+        //logger.info("Creating Menu Scene");
     }
 
     /**
@@ -36,7 +36,7 @@ public class MenuScene extends BaseScene {
      */
     @Override
     public void build() {
-        logger.info("Building " + this.getClass().getName());
+        //logger.info("Building " + this.getClass().getName());
 
         root = new GamePane(gameWindow.getWidth(),gameWindow.getHeight());
 

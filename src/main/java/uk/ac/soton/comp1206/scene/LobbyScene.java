@@ -32,7 +32,7 @@ public class LobbyScene extends BaseScene {
      */
     public LobbyScene(GameWindow gameWindow) {
         super(gameWindow);
-        logger.info("Creating Lobby Scene");
+        //logger.info("Creating Lobby Scene");
     }
 
     /**
@@ -40,8 +40,9 @@ public class LobbyScene extends BaseScene {
      */
     @Override
     public void build() {
-        logger.info("Building " + this.getClass().getName());
+        //logger.info("Building " + this.getClass().getName());
 
+        logger.info("Connecting to the server from {}", this.getClass().getName());
         communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
@@ -149,6 +150,15 @@ public class LobbyScene extends BaseScene {
             communicator.send("START");
         });
 
+        // Create a Timer to request current channels from the server every 5 seconds
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                communicator.send("LIST");
+            }
+        }, 0, 5000); // 0 initial delay, 5000 ms period (5 seconds)
+
         // Listener for communications
         communicator.addListener((message) -> {
             if (message.startsWith("CHANNELS ")) {
@@ -206,19 +216,18 @@ public class LobbyScene extends BaseScene {
                     messagesList.getChildren().add(messageLabel);
                 });
             } else if (message.equals("START")) {
-                // switch scenes? TODO
+                communicator.clearListeners();
+                communicator = null;
+                Platform.runLater(() -> {
+                    gameWindow.startMultiplayerGame();
+                    timer.cancel();
+                });
             }
 
         });
 
-        // Create a Timer to request current channels from the server every 5 seconds
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                communicator.send("LIST");
-            }
-        }, 0, 5000); // 0 initial delay, 5000 ms period (5 seconds)
+
+
     }
 
     /**
@@ -230,8 +239,9 @@ public class LobbyScene extends BaseScene {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             switch (event.getCode()) {
                 case ESCAPE:
-                    gameWindow.startMenu();
                     communicator.send("QUIT");
+                    communicator.clearListeners();
+                    gameWindow.startMenu();
                     break;
             }
         });

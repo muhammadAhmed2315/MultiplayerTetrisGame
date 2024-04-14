@@ -21,21 +21,11 @@ import java.util.concurrent.TimeUnit;
  * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
  * and to handle actions made by the player should take place inside this class.
  */
-public class Game {
+public class MultiplayerGame extends Game {
 
     private static final Logger logger = LogManager.getLogger(Game.class);
 
     private Random random = new Random();
-
-    /**
-     * Number of rows
-     */
-    protected final int rows;
-
-    /**
-     * Number of columns
-     */
-    protected final int cols;
 
     /**
      * Listener for handling when the next piece
@@ -80,7 +70,6 @@ public class Game {
     /**
      * The grid model linked to the game
      */
-    protected final Grid grid;
     private GamePiece currentPiece;
     private GamePiece nextPiece;
 
@@ -89,19 +78,15 @@ public class Game {
      * @param cols number of columns
      * @param rows number of rows
      */
-    public Game(int cols, int rows) {
-        this.cols = cols;
-        this.rows = rows;
-
-        //Create a new grid model to represent the game state
-        this.grid = new Grid(cols,rows);
+    public MultiplayerGame(int cols, int rows) {
+        super(cols, rows);
     }
 
     /**
      * Start the game
      */
     public void start() {
-        logger.info("Starting single player game");
+        logger.info("Starting multiplayer game");
         initialiseGame();
     }
 
@@ -109,7 +94,7 @@ public class Game {
      * Initialise a new game and set up anything that needs to be done at the start
      */
     public void initialiseGame() {
-        logger.info("Initialising single player game");
+        logger.info("Initialising multiplayer game");
         gameTimer = Executors.newSingleThreadScheduledExecutor();
         gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
         gameLoopListener.handle(getTimerDelay());
@@ -122,7 +107,7 @@ public class Game {
      * the user doesn't play a piece within the given time.
      */
     private void gameLoop() {
-        logger.info("Single player game loop triggered");
+        logger.info("Multiplayer game loop triggered");
         if (livesRemaining.get() > 0) {
             Platform.runLater(() -> {
                 livesRemaining.set(livesRemaining.get() - 1);

@@ -56,6 +56,7 @@ public class GameWindow {
         setupDefaultScene();
 
         //Setup communicator
+        logger.info("Connecting to the server from {}", this.getClass().getName());
         communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
         //Go to menu
@@ -66,7 +67,7 @@ public class GameWindow {
      * Setup the font and any other resources we need
      */
     private void setupResources() {
-        logger.info("Loading resources");
+        //logger.info("Loading resources");
 
         //We need to load fonts here due to the Font loader bug with spaces in URLs in the CSS files
         Font.loadFont(getClass().getResourceAsStream("/style/Orbitron-Regular.ttf"),32);
@@ -100,6 +101,11 @@ public class GameWindow {
      * Display the lobby scene
      */
     public void startLobby() { loadScene(new LobbyScene(this)); };
+
+    /**
+     * Display the multiplayer game
+     */
+    public void startMultiplayerGame() { loadScene(new MultiplayerScene(this)); }
 
     /**
      * Set up the default settings for the stage itself (the window), such as the title and minimum width and height.
@@ -141,7 +147,7 @@ public class GameWindow {
      * When switching scenes, perform any cleanup needed, such as removing previous listeners
      */
     public void cleanup() {
-        logger.info("Clearing up previous scene");
+        //logger.info("Clearing up previous scene");
         communicator.clearListeners();
     }
 

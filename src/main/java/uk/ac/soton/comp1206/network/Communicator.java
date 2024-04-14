@@ -48,7 +48,7 @@ public class Communicator {
                 }
                 @Override
                 public void onPingFrame(WebSocket webSocket, WebSocketFrame webSocketFrame) throws Exception {
-                    logger.info("Ping? Pong!");
+                    //logger.info("Ping? Pong!");
                 }
             });
 

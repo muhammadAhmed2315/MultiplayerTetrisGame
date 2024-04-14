@@ -3,6 +3,7 @@ package uk.ac.soton.comp1206.scene;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -17,7 +18,8 @@ import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBoard;
 import uk.ac.soton.comp1206.component.PieceBoard;
-import uk.ac.soton.comp1206.game.Game;
+import uk.ac.soton.comp1206.game.MultiplayerGame;
+import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
@@ -27,21 +29,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
+ * TODO THIS COMMENT
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
  */
-public class ChallengeScene extends BaseScene {
+public class MultiplayerScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
-    protected Game game;
+    private Communicator communicator;
+    protected MultiplayerGame game;
     protected GameBoard board;
 
     /**
      * Create a new Single Player challenge scene
      * @param gameWindow the Game Window
      */
-    public ChallengeScene(GameWindow gameWindow) {
+    public MultiplayerScene(GameWindow gameWindow) {
         super(gameWindow);
-        logger.info("Creating ChallengeScene");
+        logger.info("Creating MultiplayerScene");
     }
 
     /**
@@ -52,6 +56,12 @@ public class ChallengeScene extends BaseScene {
         logger.info("Building " + this.getClass().getName());
 
         setupGame();
+
+        logger.info("Connecting to the server from {}", this.getClass().getName());
+        communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
+
+        logger.info("*******************************************************************");
+        communicator.send("SCORES");
 
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
@@ -64,7 +74,7 @@ public class ChallengeScene extends BaseScene {
         var mainPane = new BorderPane();
         challengePane.getChildren().add(mainPane);
 
-        board = new GameBoard(game.getGrid(),gameWindow.getWidth()/2,gameWindow.getWidth()/2);
+        board = new GameBoard(game.getGrid(), gameWindow.getWidth()/2, gameWindow.getWidth()/2);
         mainPane.setCenter(board);
 
         // Bar at the top of the screen showing the score on the left and the lives remaining
@@ -89,26 +99,31 @@ public class ChallengeScene extends BaseScene {
         topBar.setAlignment(Pos.CENTER);
 
         // Bar on the right hand side, showing the high score, next piece, and the level
-        Label multiplierHeading = new Label("Multiplier");
-        Label actualMultiplier = new Label("1");
-        multiplierHeading.getStyleClass().add("heading");
-        actualMultiplier.getStyleClass().add("level");
-        VBox multiplierVBox = new VBox(multiplierHeading, actualMultiplier);
+        Label versusLabel = new Label("Versus");
+        versusLabel.getStyleClass().add("heading");
 
-        Label highScoreHeading = new Label("High Score");
-        Label actualHighScore = new Label(Integer.toString(getHighScore()));
-        highScoreHeading.getStyleClass().add("heading");
-        actualHighScore.getStyleClass().add("level");
-        VBox highScoreVBox = new VBox(highScoreHeading, actualHighScore);
+        VBox playerScoresVBox = new VBox();
+
+        communicator.send("SCORES");
+        // Handle receiving scores from the server
+        communicator.addListener((message) -> {
+            logger.info("*******************************");
+            if (message.startsWith("SCORES ")) {
+                //logger.info("THIS IS THE MESSAGE{}", message);
+                message = message.split(" ")[1];
+                String[] scores = message.split("\n");
+                Platform.runLater(() -> {
+                    for (String score : scores) {
+                        Label playerScore = new Label(score);
+                        playerScore.getStyleClass().add("heading");
+                        playerScoresVBox.getChildren().add(playerScore);
+                    }
+                });
+            }
+        });
 
         Label incomingLabel = new Label("Incoming");
         incomingLabel.getStyleClass().add("heading");
-
-        game.getUserScore().addListener((ObservableValue, oldValue, newValue) -> {
-            if (game.getUserScore().intValue() > Integer.valueOf(actualHighScore.getText())) {
-                actualHighScore.setText(Integer.toString(game.getUserScore().intValue()));
-            }
-        });
 
         PieceBoard currentPieceBoard = new PieceBoard(3, 3, 132, 132, true);
         PieceBoard nextPieceBoard = new PieceBoard(3, 3, 80, 80, false);
@@ -120,19 +135,11 @@ public class ChallengeScene extends BaseScene {
 
         game.setOnLineClear(board::fadeOut);
 
-        Label levelHeading = new Label("Level");
-        Label actualLevel = new Label("0");
-        levelHeading.getStyleClass().add("heading");
-        actualLevel.getStyleClass().add("level");
-        VBox levelVBox = new VBox(levelHeading, actualLevel);
-
-        VBox rightBar = new VBox(multiplierVBox, highScoreVBox, incomingLabel, currentPieceBoard, nextPieceBoard, levelVBox);
+        VBox rightBar = new VBox(versusLabel, playerScoresVBox, incomingLabel, currentPieceBoard, nextPieceBoard);
         rightBar.setAlignment(Pos.CENTER);
 
         Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
-        Bindings.bindBidirectional(actualLevel.textProperty(), game.getGameLevel(), new NumberStringConverter());
         Bindings.bindBidirectional(actualLives.textProperty(), game.getLivesRemaining(), new NumberStringConverter());
-        Bindings.bindBidirectional(actualMultiplier.textProperty(), game.getScoreMultiplier(), new NumberStringConverter());
 
         actualLives.textProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue.equals("-1")) {
@@ -147,18 +154,18 @@ public class ChallengeScene extends BaseScene {
         game.setGameLoopListener((event) -> {
             Timeline timeline = new Timeline();
             timeline.getKeyFrames().addAll(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(rectangle.widthProperty(), gameWindow.getWidth()),
-                    new KeyValue(rectangle.fillProperty(), Color.GREEN)
-                ),
-                new KeyFrame(
-                    Duration.millis(event / 2), new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() / 2),
-                    new KeyValue(rectangle.fillProperty(), Color.YELLOW)
-                ),
-                new KeyFrame(
-                    Duration.millis(event), new KeyValue(rectangle.widthProperty(), 0),
-                    new KeyValue(rectangle.fillProperty(), Color.RED)
-                )
+                    new KeyFrame(Duration.ZERO,
+                            new KeyValue(rectangle.widthProperty(), gameWindow.getWidth()),
+                            new KeyValue(rectangle.fillProperty(), Color.GREEN)
+                    ),
+                    new KeyFrame(
+                            Duration.millis(event / 2), new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() / 2),
+                            new KeyValue(rectangle.fillProperty(), Color.YELLOW)
+                    ),
+                    new KeyFrame(
+                            Duration.millis(event), new KeyValue(rectangle.widthProperty(), 0),
+                            new KeyValue(rectangle.fillProperty(), Color.RED)
+                    )
             );
             timeline.setCycleCount(Integer.MAX_VALUE);
             timeline.play();
@@ -240,7 +247,7 @@ public class ChallengeScene extends BaseScene {
      */
     public void setupGame() {
         //Start new game
-        game = new Game(5, 5);
+        game = new MultiplayerGame(5, 5);
     }
 
     /**
@@ -248,6 +255,7 @@ public class ChallengeScene extends BaseScene {
      */
     public void endGame() {
         //logger.info("Ending the game");
+        communicator.clearListeners();
         game.gameTimerShutdown();
         game = null;
     }
@@ -257,7 +265,7 @@ public class ChallengeScene extends BaseScene {
      */
     @Override
     public void initialise() {
-        logger.info("Initialising ChallengeScene");
+        logger.info("Initialising MultiplayerScene");
         game.start();
 
         // Add keyboard listener to the scene

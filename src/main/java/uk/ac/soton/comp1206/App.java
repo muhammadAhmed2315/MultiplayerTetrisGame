@@ -32,7 +32,7 @@ public class App extends Application {
      * @param args commandline arguments
      */
     public static void main(String[] args) {
-        logger.info("Starting client");
+        //logger.info("Starting client");
         launch();
     }
 
@@ -53,7 +53,7 @@ public class App extends Application {
      * Create the GameWindow with the specified width and height
      */
     public void openGame() {
-        logger.info("Opening game window");
+        //logger.info("Opening game window");
 
         //Change the width and height in this class to change the base rendering resolution for all game parts
         var gameWindow = new GameWindow(stage,width,height);
@@ -66,7 +66,7 @@ public class App extends Application {
      * Shutdown the game
      */
     public void shutdown() {
-        logger.info("Shutting down");
+        //logger.info("Shutting down");
         System.exit(0);
     }
 

@@ -83,7 +83,7 @@ public class Grid {
      * @return whether the piece can be played or not
      */
     public boolean canPlayPiece(GamePiece piece, int placeX, int placeY) {
-        logger.info("canPlayPiece called with piece: {}, placeX: {}, placeY: {}", piece, placeX, placeY);
+        //logger.info("canPlayPiece called with piece: {}, placeX: {}, placeY: {}", piece, placeX, placeY);
 
         int topX = placeX - 1;
         int topY = placeY - 1;
@@ -98,7 +98,7 @@ public class Grid {
                     // Check if we can place this block on our grid
                     var currentGridValue = get(topX + blockX, topY + blockY);
                     if (currentGridValue != 0) {
-                        logger.info("Unable to place piece, conflict at {} {}", placeX + blockX, placeY + blockY);
+                        //logger.info("Unable to place piece, conflict at {} {}", placeX + blockX, placeY + blockY);
                         return false;
                     }
                 }
@@ -115,7 +115,7 @@ public class Grid {
      * @param placeY placement Y
      */
     public void playPiece(GamePiece piece, int placeX, int placeY) {
-        logger.info("playPiece called with piece: {}, placeX: {}, placeY: {}", piece, placeX, placeY);
+        //logger.info("playPiece called with piece: {}, placeX: {}, placeY: {}", piece, placeX, placeY);
 
         int topX = placeX - 1;
         int topY = placeY - 1;

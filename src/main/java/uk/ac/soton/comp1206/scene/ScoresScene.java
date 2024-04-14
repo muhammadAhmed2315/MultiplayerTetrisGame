@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ScoresScene extends BaseScene {
 
@@ -68,7 +67,7 @@ public class ScoresScene extends BaseScene {
     public ScoresScene(GameWindow gameWindow, Game game) {
         super(gameWindow);
         this.game = game;
-        logger.info("Creating Scores Scene");
+        //logger.info("Creating Scores Scene");
     }
 
     /**
@@ -76,8 +75,9 @@ public class ScoresScene extends BaseScene {
      */
     @Override
     public void build() {
-        logger.info("Building " + this.getClass().getName());
+        //logger.info("Building " + this.getClass().getName());
 
+        logger.info("Connecting to the server from {}", this.getClass().getName());
         communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
         ArrayList<Pair<String, Integer>> localScoresArrayList = new ArrayList<>();
@@ -169,9 +169,9 @@ public class ScoresScene extends BaseScene {
         communicator.addListener((message) -> {
             String messageWithoutPrefix = message.split(" ")[1];
             String[] scoresList = messageWithoutPrefix.split("\n");
-            logger.info("{}", Arrays.toString(scoresList));
+            //logger.info("{}", Arrays.toString(scoresList));
             for (int i = 0; i < 10; i++) {
-                logger.info("{}", i);
+                //logger.info("{}", i);
                 var scorePair = scoresList[i];
                 //logger.info("Adding to remoteScores: {}:{}", scorePair.split(":")[0], scorePair.split(":")[1]);
                 remoteScores.add(new Pair(scorePair.split(":")[0], Integer.valueOf(scorePair.split(":")[1])));
@@ -197,7 +197,7 @@ public class ScoresScene extends BaseScene {
      * Loads scores from a local text file and stores them in the ScoresScene.localScores property
      */
     public void loadScores() {
-        logger.info("Loading scores from the local text file");
+        //logger.info("Loading scores from the local text file");
         var inputStream = ScoresScene.class.getResourceAsStream("/scores.txt");
 
         if (inputStream == null) {
@@ -250,7 +250,7 @@ public class ScoresScene extends BaseScene {
      * Write updates scores to the local text file
      */
     public void writeScores() {
-        logger.info("Writing updated scores to the local text file");
+        //logger.info("Writing updated scores to the local text file");
         try {
             // Attempt to get the path to the scores file
             Path scoresFilePath = Paths.get(ScoresScene.class.getResource("/scores.txt").toURI());

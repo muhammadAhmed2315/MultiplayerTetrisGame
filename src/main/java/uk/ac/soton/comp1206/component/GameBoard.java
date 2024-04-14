@@ -155,7 +155,7 @@ public class GameBoard extends GridPane {
      * Build the GameBoard by creating a block at every x and y column and row
      */
     protected void build() {
-        logger.info("Building grid: {} x {}",cols,rows);
+        //logger.info("Building grid: {} x {}",cols,rows);
 
         setMaxWidth(width);
         setMaxHeight(height);
@@ -243,7 +243,7 @@ public class GameBoard extends GridPane {
      * Triggered when the main GameBoard is right-clicked. Call the attached listener.
      */
     private void GameBoardRightClicked() {
-        logger.info("Main GameBoard right-clicked");
+        //logger.info("Main GameBoard right-clicked");
 
         if (rightClickedListener != null) {
             rightClickedListener.handle();
@@ -255,7 +255,7 @@ public class GameBoard extends GridPane {
      * @param block block clicked on
      */
     private void blockClicked(GameBlock block) {
-        logger.info("Block clicked: {}", block);
+        //logger.info("Block clicked: {}", block);
 
         if(blockClickedListener != null) {
             blockClickedListener.blockClicked(block);

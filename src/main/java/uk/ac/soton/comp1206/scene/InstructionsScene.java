@@ -27,7 +27,7 @@ public class InstructionsScene extends BaseScene {
      */
     public InstructionsScene(GameWindow gameWindow) {
         super(gameWindow);
-        logger.info("Creating Instruction Scene");
+        //logger.info("Creating Instruction Scene");
     }
 
     /**
@@ -35,7 +35,7 @@ public class InstructionsScene extends BaseScene {
      */
     @Override
     public void build() {
-        logger.info("Building " + this.getClass().getName());
+        //logger.info("Building " + this.getClass().getName());
 
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
