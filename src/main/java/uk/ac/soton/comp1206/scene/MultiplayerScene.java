@@ -1,11 +1,13 @@
 package uk.ac.soton.comp1206.scene;
 
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -30,8 +32,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * TODO THIS COMMENT
- * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
+ * The Multi Player challenge scene. Holds the UI for the multi player challenge mode in the game.
  */
 public class MultiplayerScene extends BaseScene {
 
@@ -39,7 +40,9 @@ public class MultiplayerScene extends BaseScene {
     protected MultiplayerGame game;
     protected GameBoard board;
 
-    // TODO this comment
+    /**
+     * Determines whether the message input text field should be visible or not
+     */
     private SimpleBooleanProperty messageInputVisible = new SimpleBooleanProperty(false);
 
     /**
@@ -71,6 +74,7 @@ public class MultiplayerScene extends BaseScene {
         root.getChildren().add(challengePane);
 
         var mainPane = new BorderPane();
+        mainPane.setPadding(new Insets(10, 10, 10, 10));
         challengePane.getChildren().add(mainPane);
 
         board = new GameBoard(game.getGrid(), gameWindow.getWidth()/2, gameWindow.getWidth()/2);
@@ -87,8 +91,14 @@ public class MultiplayerScene extends BaseScene {
         actualScore.getStyleClass().add("score");
         VBox scoreVBox = new VBox(scoreHeading, actualScore);
 
-        Pane spacer = new Pane();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Pane spacerOne = new Pane();
+        HBox.setHgrow(spacerOne, Priority.ALWAYS);
+
+        Label sceneTitleLabel = new Label("Multiplayer Match");
+        sceneTitleLabel.getStyleClass().add("title");
+
+        Pane spacerTwo = new Pane();
+        HBox.setHgrow(spacerTwo, Priority.ALWAYS);
 
         Label livesHeading = new Label("Lives");
         Label actualLives = new Label("3");
@@ -96,14 +106,18 @@ public class MultiplayerScene extends BaseScene {
         actualLives.getStyleClass().add("lives");
         VBox livesVBox = new VBox(livesHeading, actualLives);
 
-        HBox topBar = new HBox(scoreVBox, spacer, livesVBox);
+        HBox topBar = new HBox(scoreVBox, spacerOne, sceneTitleLabel, spacerTwo, livesVBox);
         topBar.setAlignment(Pos.CENTER);
 
         // Bar on the right hand side, showing the high score, next piece, and the level
         Label versusLabel = new Label("Versus");
         versusLabel.getStyleClass().add("heading");
 
+        Label playerScoresFormatLabel = new Label("Score:Lives");
+        playerScoresFormatLabel.getStyleClass().add("heading");
+
         VBox playerScoresVBox = new VBox();
+        playerScoresVBox.setAlignment(Pos.CENTER);
 
         Label incomingLabel = new Label("Incoming");
         incomingLabel.getStyleClass().add("heading");
@@ -118,7 +132,8 @@ public class MultiplayerScene extends BaseScene {
 
         game.setOnLineClear(board::fadeOut);
 
-        VBox rightBar = new VBox(versusLabel, playerScoresVBox, incomingLabel, currentPieceBoard, nextPieceBoard);
+        VBox rightBar = new VBox(versusLabel, playerScoresFormatLabel, playerScoresVBox, incomingLabel, currentPieceBoard, nextPieceBoard);
+        rightBar.setSpacing(10);
         rightBar.setAlignment(Pos.CENTER);
 
         Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
@@ -132,46 +147,35 @@ public class MultiplayerScene extends BaseScene {
         });
 
         // Timer bar at the bottom of the screen
-        Rectangle rectangle = new Rectangle(gameWindow.getWidth(), (double) gameWindow.getHeight() / 30);
+        Rectangle rectangle = new Rectangle(gameWindow.getWidth() - 20, (double) gameWindow.getHeight() / 30);
         rectangle.setFill(Color.GREEN);
         game.setGameLoopListener((event) -> {
             Timeline timeline = new Timeline();
             timeline.getKeyFrames().addAll(
                     new KeyFrame(Duration.ZERO,
-                            new KeyValue(rectangle.widthProperty(), gameWindow.getWidth()),
+                            new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() - 20),
                             new KeyValue(rectangle.fillProperty(), Color.GREEN)
                     ),
                     new KeyFrame(
-                            Duration.millis(event / 2), new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() / 2),
+                            Duration.millis(event / 2),
+                            new KeyValue(rectangle.widthProperty(), (gameWindow.getWidth() - 20) / 2),
                             new KeyValue(rectangle.fillProperty(), Color.YELLOW)
                     ),
                     new KeyFrame(
-                            Duration.millis(event), new KeyValue(rectangle.widthProperty(), 0),
+                            Duration.millis(event),
+                            new KeyValue(rectangle.widthProperty(), 0),
                             new KeyValue(rectangle.fillProperty(), Color.RED)
                     )
             );
-            timeline.setCycleCount(Integer.MAX_VALUE);
+            timeline.setCycleCount(Timeline.INDEFINITE);
             timeline.play();
         });
-
-        /**
-         * 1) only label //
-         * press T //
-         * 2) label + textfield //
-         * enter message + enter //
-         * 3) only message label //
-         * press t
-         * 4) message + textfield
-         * enter message + enter
-         * 5) only message label
-         */
 
         Label inGameChatLabel = new Label("In-Game Chat: Press T to send a chat message");
         inGameChatLabel.getStyleClass().add("messages");
 
         TextField messageInput = new TextField();
-        // set pref width
-        // set pref height
+        // set pref width and height
         messageInput.visibleProperty().bind(messageInputVisible);
         messageInput.setOnAction((event) -> {
             gameWindow.getCommunicator().send("MSG " + messageInput.getText());
@@ -180,16 +184,17 @@ public class MultiplayerScene extends BaseScene {
             });
         });
 
-        // TODO center the inGameChatLabel somehow and position it directly below the GameBoard
         VBox chatVBox = new VBox(inGameChatLabel, messageInput);
 
-        // TODO this comment
-        Region bottomSpacer = new Region();
-        bottomSpacer.setPrefHeight(5); // Set the desired padding height
+        chatVBox.setAlignment(Pos.CENTER);
 
-        VBox timerVBox = new VBox(inGameChatLabel, chatVBox, rectangle, bottomSpacer);
+        VBox tempVBox = new VBox(inGameChatLabel, chatVBox);
+        tempVBox.setSpacing(10);
+        tempVBox.setAlignment(Pos.CENTER);
 
-        topBar.setSpacing(10); // Set spacing between the subcomponents
+        VBox timerVBox = new VBox(tempVBox, rectangle);
+        timerVBox.setSpacing(10);
+
         mainPane.setTop(topBar);
         mainPane.setRight(rightBar);
         mainPane.setBottom(timerVBox);
@@ -217,21 +222,30 @@ public class MultiplayerScene extends BaseScene {
             if (message.startsWith("SCORES ")) {
                 // Update scoreboard
                 message = message.substring(7);
-                logger.info("********{}************", message);
                 String[] scores = message.split("\n");
-                logger.info("********{}************", scores);
                 Platform.runLater(() -> {
+                    String[] colours = {"Fuchsia", "Red", "DarkOrange", "Yellow", "YellowGreen", "LimeGreen", "MediumSpringGreen", "SkyBlue", "DeepSkyBlue", "DodgerBlue"};
                     playerScoresVBox.getChildren().clear();
+                    int index = 0;
                     for (String score : scores) {
                         Label playerScore = new Label(score);
-                        playerScore.getStyleClass().add("heading");
+                        playerScore.getStyleClass().add("channelItem");
+                        playerScore.setStyle("-fx-text-fill: " + colours[index] + ";");
                         playerScoresVBox.getChildren().add(playerScore);
+
+                        FadeTransition fade = new FadeTransition(Duration.seconds(0.3), playerScore);
+                        fade.setFromValue(0);
+                        fade.setToValue(1);
+
+                        fade.play();
+                        index++;
                     }
                 });
             } else if (message.startsWith("NICK ")) {
                 // Change heading above score
                 scoreHeading.setText(message.substring(5));
             } else if (message.startsWith("MSG ")) {
+                Multimedia.switchAudioFile("message.wav");
                 String messageSenderName = message.split(":")[0];
                 String messageText = message.split(":")[1];
                 Platform.runLater(() -> {
@@ -241,6 +255,13 @@ public class MultiplayerScene extends BaseScene {
             }
         });
 
+        // If user is only player in the game, then NICK command is not sent by the server, and the scoreHeading
+        // label will remain empty. Moreover, the SCORES command will also not be sent by the server until the
+        // user plays a piece, and the playerScoresVBox will remain empty.
+        // Therefore, these commands are sent to ensure that a NICK response and a SCORES response is returned by
+        // the server to make sure that those UI components aren't empty at the start of the game.
+        gameWindow.getCommunicator().send("NICK");
+        gameWindow.getCommunicator().send("SCORES");
     }
 
     private int getHighScore() {

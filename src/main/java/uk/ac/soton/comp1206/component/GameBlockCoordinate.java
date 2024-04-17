@@ -28,7 +28,6 @@ public class GameBlockCoordinate {
      */
     private int hash = 0;
 
-
     /**
      * Create a new GameBlockCoordinate which stores a row and column reference to a block
      * @param x column

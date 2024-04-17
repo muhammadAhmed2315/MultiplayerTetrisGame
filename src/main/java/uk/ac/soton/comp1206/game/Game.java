@@ -55,7 +55,7 @@ public class Game {
     /**
      * User score
      */
-    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(0);
+    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(150); // TODO CHANGE THIS BACK TO 0
 
     /**
      * Score multiplier
@@ -153,7 +153,7 @@ public class Game {
      * @return how long the user has to play a piece
      */
     private int getTimerDelay() {
-        return 12000 - (500 * gameLevel.intValue()); // TODO 12000
+        return 150 - (500 * gameLevel.intValue()); // TODO 12000
     }
 
     /**
@@ -200,6 +200,7 @@ public class Game {
         //logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
         // Clear the lines
         if (!blocksToBeCleared.isEmpty()) {
+            Multimedia.switchAudioFile("clear.wav");
             lineCleared(blocksToBeCleared);
             for (GameBlockCoordinate x : blocksToBeCleared) {
                 grid.set(x.getX(), x.getY(), 0);
@@ -321,25 +322,38 @@ public class Game {
         nextPieceListener.nextPiece(currentPiece, nextPiece);
     }
 
-    // Sets nextPieceListener
+    /**
+     * Attaches a NextPieceListener to the Game instance
+     * @param nextPieceListener NextPieceListener to be attached to the Game instance
+     */
     public void setNextPieceListener(NextPieceListener nextPieceListener) {
         this.nextPieceListener = nextPieceListener;
     }
 
-    // Sets lineClearedListener
+    /**
+     * Attaches a LineClearedListener to the Game instance
+     * @param lineClearedListener LineClearedListener to be attached to the Game instance
+     */
     public void setOnLineClear(LineClearedListener lineClearedListener) {
         this.lineClearedListener = lineClearedListener;
     }
 
-    // Calls event handling code for when a line needs to be cleared
+    /**
+     * Attaches a GameLoopListener to the Game instance
+     * @param gameLoopListener GameLoopListener to be attached to the Game instance
+     */
+    public void setGameLoopListener(GameLoopListener gameLoopListener) {
+        this.gameLoopListener = gameLoopListener;
+    }
+
+    /**
+     * Calls code that handles what happens when a line needs to be cleared
+     * @param blocksToBeCleared
+     */
     private void lineCleared(HashSet<GameBlockCoordinate> blocksToBeCleared) {
         if(lineClearedListener != null) {
             lineClearedListener.handle(blocksToBeCleared);
         }
-    }
-
-    public void setGameLoopListener(GameLoopListener gameLoopListener) {
-        this.gameLoopListener = gameLoopListener;
     }
 
     /**

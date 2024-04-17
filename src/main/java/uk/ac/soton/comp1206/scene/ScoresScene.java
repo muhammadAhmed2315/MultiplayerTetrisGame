@@ -3,6 +3,7 @@ package uk.ac.soton.comp1206.scene;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -20,15 +21,9 @@ import uk.ac.soton.comp1206.component.ScoresList;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
+import uk.ac.soton.comp1206.utility.Multimedia;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.io.*;
 import java.util.ArrayList;
 
 public class ScoresScene extends BaseScene {
@@ -46,13 +41,14 @@ public class ScoresScene extends BaseScene {
     private SimpleListProperty<Pair<String, Integer>> localScores;
 
     /**
-     * Decides whether to prompt the user at the beginning of the screen for their name.
-     * Essentially, set to true if the user gets a top 10 high score when compared to the scores from the
-     * text file.
+     * Decides whether to prompt the user at the beginning of the screen for their name. If user got a top 10
+     * local high score, set to true, else false.
      */
     private boolean showInputUsernameScreen = false;
 
-    // TODO this comment
+    /**
+     * Holds a list of scores retrieved from the server
+     */
     private SimpleListProperty<Pair<String, Integer>> remoteScores;
 
     /**
@@ -64,6 +60,7 @@ public class ScoresScene extends BaseScene {
         super(gameWindow);
         this.game = game;
         //logger.info("Creating Scores Scene");
+        Multimedia.switchBackgroundMusic("end.wav");
     }
 
     /**
@@ -76,18 +73,13 @@ public class ScoresScene extends BaseScene {
         ArrayList<Pair<String, Integer>> localScoresArrayList = new ArrayList<>();
         ArrayList<Pair<String, Integer>> remoteScoresArrayList = new ArrayList<>();
 
-
         ObservableList<Pair<String, Integer>> observableLocalScores = FXCollections.observableArrayList(localScoresArrayList);
         ObservableList<Pair<String, Integer>> observableRemoteScores = FXCollections.observableArrayList(remoteScoresArrayList);
-
 
         localScores = new SimpleListProperty<>(observableLocalScores);
         remoteScores = new SimpleListProperty<>(observableRemoteScores);
 
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
-
-        loadScores();
-        loadOnlineScores();
 
         var challengePane = new StackPane();
         challengePane.setMaxWidth(gameWindow.getWidth());
@@ -96,7 +88,9 @@ public class ScoresScene extends BaseScene {
         root.getChildren().add(challengePane);
 
         var contentVBox = new VBox();
-        contentVBox.setAlignment(Pos.CENTER);
+        contentVBox.setAlignment(Pos.TOP_CENTER);
+        contentVBox.setSpacing(20);
+        contentVBox.setPadding(new Insets(10, 10, 10, 10));
         challengePane.getChildren().add(contentVBox);
 
         var imageFilePath = ScoresScene.class.getResource("/images/" + "TetrECS.png").toExternalForm();
@@ -110,45 +104,58 @@ public class ScoresScene extends BaseScene {
         Label gameOverHeading = new Label("Game Over");
         gameOverHeading.getStyleClass().add("score");
 
-        // if there are no high scores and user gets a score higher than 0
+        loadLocalScores();
+        loadOnlineScores();
+
         int counter = 0;
-        if (localScores.size() == 0 && game.getUserScore().intValue() > 0) {
-            showInputUsernameScreen = true;
-            counter = 0;
-        } else if (localScores.size() < 10) {
-            // if there are less than 10 high scores
-            showInputUsernameScreen = true;
-            counter = localScores.size();
-        } else {
-            for (Pair<String, Integer> score : localScores) {
-                if (score.getValue() < game.getUserScore().intValue()) {
-                    showInputUsernameScreen = true;
-                    break;
-                }
-                counter++;
+        for (Pair<String, Integer> score : localScores) {
+            if (score.getValue() < game.getUserScore().intValue()) {
+                showInputUsernameScreen = true;
+                break;
             }
+            counter++;
         }
 
         if (showInputUsernameScreen) {
             contentVBox.getChildren().clear();
             TextField inputUsername = new TextField();
             inputUsername.setPromptText("Enter your name");
+            Button submitButton = new Button("Submit");
 
-            Button myButton = new Button("Submit");
             int finalCounter = counter;
-            myButton.setOnAction(event -> {
-                // update localScores
-                localScores.add(finalCounter, new Pair(inputUsername.getText(), game.getUserScore().intValue()));
 
-                // update scores file
-                writeScores();
+            submitButton.setOnMouseClicked((event) -> {
+                if (!inputUsername.getText().trim().equals("")) {
+                    Multimedia.switchAudioFile("pling.wav");
 
-                // switch scenes
-                showInputUsernameScreen = false;
-                showScoresList(contentVBox, imageView, gameOverHeading);
+                    // update localScores
+                    localScores.add(finalCounter, new Pair(inputUsername.getText(), game.getUserScore().intValue()));
+
+                    // update scores file
+                    writeLocalScores();
+
+                    // switch scenes
+                    showInputUsernameScreen = false;
+                    showScoresList(contentVBox, imageView, gameOverHeading);
+                }
             });
 
-            contentVBox.getChildren().addAll(imageView, gameOverHeading, inputUsername, myButton);
+            inputUsername.setOnAction((event) -> {
+                if (!inputUsername.getText().trim().equals("")) {
+                    Multimedia.switchAudioFile("pling.wav");
+                    // update localScores
+                    localScores.add(finalCounter, new Pair(inputUsername.getText(), game.getUserScore().intValue()));
+
+                    // update scores file
+                    writeLocalScores();
+
+                    // switch scenes
+                    showInputUsernameScreen = false;
+                    showScoresList(contentVBox, imageView, gameOverHeading);
+                }
+            });
+
+            contentVBox.getChildren().addAll(imageView, gameOverHeading, inputUsername, submitButton);
         } else {
             showScoresList(contentVBox, imageView, gameOverHeading);
         }
@@ -189,21 +196,47 @@ public class ScoresScene extends BaseScene {
     /**
      * Loads scores from a local text file and stores them in the ScoresScene.localScores property
      */
-    public void loadScores() {
-        //logger.info("Loading scores from the local text file");
-        var inputStream = ScoresScene.class.getResourceAsStream("/scores.txt");
+    public void loadLocalScores() {
+        logger.info("Loading scores from the local text file");
+        try {
+            // Get the directory path where the jar file is located or current directory if run from code
+            String dirPath = ChallengeScene.getJarDirectory();
+            String filePath = dirPath + File.separator + "scores.txt";
 
-        if (inputStream == null) {
-            throw new RuntimeException("File scores.txt not found in the resources directory");
-        }
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                localScores.add(new Pair(line.split(":")[0], Integer.valueOf(line.split(":")[1])));
+            File scoresFile = new File(filePath);
+            try (BufferedReader reader = new BufferedReader(new FileReader(scoresFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    localScores.add(new Pair(line.split(":")[0], Integer.valueOf(line.split(":")[1])));
+                }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Write updates scores to the local text file
+     */
+    public void writeLocalScores() {
+        //logger.info("Writing updated scores to the local text file");
+        try {
+            // Get the directory path where the jar file is located or current directory if run from code
+            String dirPath = ChallengeScene.getJarDirectory();
+            String filePath = dirPath + File.separator + "scores.txt";
+
+            File scoresFile = new File(filePath);
+
+            StringBuilder scoresData = new StringBuilder();
+            for (Pair<String, Integer> score : localScores.subList(0, 10)) {
+                scoresData.append(score.getKey()).append(":").append(score.getValue()).append("\n");
+            }
+
+            try (FileWriter writer = new FileWriter(scoresFile, false)) {
+                writer.write(String.valueOf(scoresData));
+            }
+        } catch (IOException e) {
+            logger.error("Error writing scores: ", e);
         }
     }
 
@@ -232,58 +265,15 @@ public class ScoresScene extends BaseScene {
 
         // HBox to hold both lists
         VBox localScoresVBox = new VBox(localHighScoresHeading, localScoresList);
+        localScoresVBox.setAlignment(Pos.TOP_CENTER);
         VBox onlineScoresVBox = new VBox(onlineHighScoresHeading, onlineScoresList);
+        onlineScoresVBox.setAlignment(Pos.TOP_CENTER);
         HBox localAndRemoteScores = new HBox(localScoresVBox, onlineScoresVBox);
+        localAndRemoteScores.setAlignment(Pos.TOP_CENTER);
 
         contentVBox.getChildren().clear();
         contentVBox.getChildren().addAll(imageView, gameOverHeading, localAndRemoteScores);
-    }
-
-    /**
-     * Write updates scores to the local text file
-     */
-    public void writeScores() {
-        //logger.info("Writing updated scores to the local text file");
-        try {
-            // Attempt to get the path to the scores file
-            Path scoresFilePath = Paths.get(ScoresScene.class.getResource("/scores.txt").toURI());
-
-            // Create the file if it doesn't exist
-            if (!Files.exists(scoresFilePath)) {
-                Files.write(scoresFilePath, getDefaultScores(), StandardOpenOption.CREATE_NEW);
-            }
-
-            // Format scores for writing
-            StringBuilder scoresData = new StringBuilder();
-            for (Pair<String, Integer> score : localScores.subList(0, Math.min(10, localScores.size()))) {
-                scoresData.append(score.getKey()).append(":").append(score.getValue()).append("\n");
-            }
-
-            // Write scores to the file
-            Files.writeString(scoresFilePath, scoresData.toString(), StandardOpenOption.TRUNCATE_EXISTING);
-
-        } catch (IOException | URISyntaxException e) {
-            logger.error("Error writing scores: ", e);
-        }
-    }
-
-    /**
-     * Default scores list for if there is no score file
-     * @return ArrayList of 10 default scores in the form "name:score"
-     */
-    private ArrayList<String> getDefaultScores() {
-        ArrayList<String> defaultScores = new ArrayList<>();
-        defaultScores.add("Oliver:2850");
-        defaultScores.add("Logan:2250");
-        defaultScores.add("Benjamin:2350");
-        defaultScores.add("Lucas:2600");
-        defaultScores.add("Elijah:1800");
-        defaultScores.add("Evelyn:1550");
-        defaultScores.add("Nora:1450");
-        defaultScores.add("Harper:1150");
-        defaultScores.add("Amelia:850");
-        defaultScores.add("Avery:500");
-        return defaultScores;
+        contentVBox.setAlignment(Pos.CENTER);
     }
 
     /**

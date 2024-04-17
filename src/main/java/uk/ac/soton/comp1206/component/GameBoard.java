@@ -216,7 +216,10 @@ public class GameBoard extends GridPane {
         return block;
     }
 
-    // Calls the fading animation on each block that is passed to it
+    /**
+     * Calls the fading animation on all the GameBlockCoordinates passed to it
+     * @param coordinates HashSet of GameBlockCoordinates to call the fading animation on
+     */
     public void fadeOut(HashSet<GameBlockCoordinate> coordinates) {
         for (GameBlockCoordinate coordinate : coordinates) {
             getBlock(coordinate.getX(), coordinate.getY()).fadeOut();
@@ -262,10 +265,16 @@ public class GameBoard extends GridPane {
         }
     }
 
+    /**
+     * Places a pieces in the location the keyboard is aiming at
+     */
     public void placeKeyboardAim() {
         blockClicked(blocks[keyboardAim.getX()][keyboardAim.getY()]);
     }
 
+    /**
+     * Moves the keyboard aim one block up
+     */
     public void moveKeyboardAimUp() {
         if (keyboardAim.getY() != 0) {
             blocks[mouseAim.getX()][mouseAim.getY()].offHover();
@@ -275,6 +284,9 @@ public class GameBoard extends GridPane {
         }
     }
 
+    /**
+     * Moves the keyboard aim one block down
+     */
     public void moveKeyboardAimDown() {
         if (keyboardAim.getY() != 4) {
             blocks[mouseAim.getX()][mouseAim.getY()].offHover();
@@ -284,6 +296,9 @@ public class GameBoard extends GridPane {
         }
     }
 
+    /**
+     * Moves the keyboard aim one block to the right
+     */
     public void moveKeyboardAimRight() {
         if (keyboardAim.getX() != 4) {
             blocks[mouseAim.getX()][mouseAim.getY()].offHover();
@@ -293,6 +308,9 @@ public class GameBoard extends GridPane {
         }
     }
 
+    /**
+     * Moves the keyboard aim one block to the left
+     */
     public void moveKeyboardAimLeft() {
         if (keyboardAim.getX() != 0) {
             blocks[mouseAim.getX()][mouseAim.getY()].offHover();

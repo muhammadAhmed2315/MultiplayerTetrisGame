@@ -4,6 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
@@ -22,9 +23,9 @@ import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -56,12 +57,14 @@ public class ChallengeScene extends BaseScene {
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
         var challengePane = new StackPane();
+
         challengePane.setMaxWidth(gameWindow.getWidth());
         challengePane.setMaxHeight(gameWindow.getHeight());
         challengePane.getStyleClass().add("menu-background");
         root.getChildren().add(challengePane);
 
         var mainPane = new BorderPane();
+        mainPane.setPadding(new Insets(10, 10, 10, 10));
         challengePane.getChildren().add(mainPane);
 
         board = new GameBoard(game.getGrid(),gameWindow.getWidth()/2,gameWindow.getWidth()/2);
@@ -75,31 +78,42 @@ public class ChallengeScene extends BaseScene {
         scoreHeading.getStyleClass().add("heading");
         actualScore.getStyleClass().add("score");
         VBox scoreVBox = new VBox(scoreHeading, actualScore);
+        scoreVBox.setAlignment(Pos.CENTER);
 
-        Pane spacer = new Pane();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Pane spacerOne = new Pane();
+        HBox.setHgrow(spacerOne, Priority.ALWAYS);
+
+        Label sceneTitleLabel = new Label("Challenge Mode");
+        sceneTitleLabel.getStyleClass().add("title");
+
+        Pane spacerTwo = new Pane();
+        HBox.setHgrow(spacerTwo, Priority.ALWAYS);
 
         Label livesHeading = new Label("Lives");
         Label actualLives = new Label("3");
         livesHeading.getStyleClass().add("heading");
         actualLives.getStyleClass().add("lives");
         VBox livesVBox = new VBox(livesHeading, actualLives);
+        livesVBox.setAlignment(Pos.CENTER);
 
-        HBox topBar = new HBox(scoreVBox, spacer, livesVBox);
+        HBox topBar = new HBox(scoreVBox, spacerOne, sceneTitleLabel, spacerTwo, livesVBox);
         topBar.setAlignment(Pos.CENTER);
+        mainPane.setTop(topBar);
 
-        // Bar on the right hand side, showing the high score, next piece, and the level
-        Label multiplierHeading = new Label("Multiplier");
-        Label actualMultiplier = new Label("1");
-        multiplierHeading.getStyleClass().add("heading");
-        actualMultiplier.getStyleClass().add("level");
-        VBox multiplierVBox = new VBox(multiplierHeading, actualMultiplier);
-
+        // Bar on the right hand side, showing the high score, level, current piece, and next piece
         Label highScoreHeading = new Label("High Score");
         Label actualHighScore = new Label(Integer.toString(getHighScore()));
         highScoreHeading.getStyleClass().add("heading");
-        actualHighScore.getStyleClass().add("level");
+        actualHighScore.getStyleClass().add("hiscore");
         VBox highScoreVBox = new VBox(highScoreHeading, actualHighScore);
+        highScoreVBox.setAlignment(Pos.CENTER);
+
+        Label levelHeading = new Label("Level");
+        Label actualLevel = new Label("0");
+        levelHeading.getStyleClass().add("heading");
+        actualLevel.getStyleClass().add("level");
+        VBox levelVBox = new VBox(levelHeading, actualLevel);
+        levelVBox.setAlignment(Pos.CENTER);
 
         Label incomingLabel = new Label("Incoming");
         incomingLabel.getStyleClass().add("heading");
@@ -120,19 +134,13 @@ public class ChallengeScene extends BaseScene {
 
         game.setOnLineClear(board::fadeOut);
 
-        Label levelHeading = new Label("Level");
-        Label actualLevel = new Label("0");
-        levelHeading.getStyleClass().add("heading");
-        actualLevel.getStyleClass().add("level");
-        VBox levelVBox = new VBox(levelHeading, actualLevel);
-
-        VBox rightBar = new VBox(multiplierVBox, highScoreVBox, incomingLabel, currentPieceBoard, nextPieceBoard, levelVBox);
+        VBox rightBar = new VBox(highScoreVBox, levelVBox, incomingLabel, currentPieceBoard, nextPieceBoard);
+        rightBar.setSpacing(10);
         rightBar.setAlignment(Pos.CENTER);
 
         Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
         Bindings.bindBidirectional(actualLevel.textProperty(), game.getGameLevel(), new NumberStringConverter());
         Bindings.bindBidirectional(actualLives.textProperty(), game.getLivesRemaining(), new NumberStringConverter());
-        Bindings.bindBidirectional(actualMultiplier.textProperty(), game.getScoreMultiplier(), new NumberStringConverter());
 
         actualLives.textProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue.equals("-1")) {
@@ -141,35 +149,36 @@ public class ChallengeScene extends BaseScene {
             }
         });
 
+        mainPane.setRight(rightBar);
+
+
         // Timer bar at the bottom of the screen
-        Rectangle rectangle = new Rectangle(gameWindow.getWidth(), (double) gameWindow.getHeight() / 30);
+        Rectangle rectangle = new Rectangle(gameWindow.getWidth() - 20, (double) gameWindow.getHeight() / 30);
         rectangle.setFill(Color.GREEN);
         game.setGameLoopListener((event) -> {
             Timeline timeline = new Timeline();
             timeline.getKeyFrames().addAll(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(rectangle.widthProperty(), gameWindow.getWidth()),
-                    new KeyValue(rectangle.fillProperty(), Color.GREEN)
-                ),
-                new KeyFrame(
-                    Duration.millis(event / 2), new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() / 2),
-                    new KeyValue(rectangle.fillProperty(), Color.YELLOW)
-                ),
-                new KeyFrame(
-                    Duration.millis(event), new KeyValue(rectangle.widthProperty(), 0),
-                    new KeyValue(rectangle.fillProperty(), Color.RED)
-                )
+                    new KeyFrame(Duration.ZERO,
+                            new KeyValue(rectangle.widthProperty(), gameWindow.getWidth() - 20),
+                            new KeyValue(rectangle.fillProperty(), Color.GREEN)
+                    ),
+                    new KeyFrame(
+                            Duration.millis(event / 2),
+                            new KeyValue(rectangle.widthProperty(), (gameWindow.getWidth() - 20) / 2),
+                            new KeyValue(rectangle.fillProperty(), Color.YELLOW)
+                    ),
+                    new KeyFrame(
+                            Duration.millis(event),
+                            new KeyValue(rectangle.widthProperty(), 0),
+                            new KeyValue(rectangle.fillProperty(), Color.RED)
+                    )
             );
-            timeline.setCycleCount(Integer.MAX_VALUE);
+            timeline.setCycleCount(Timeline.INDEFINITE);
             timeline.play();
         });
-        Region bottomSpacer = new Region();
-        bottomSpacer.setPrefHeight(5); // Set the desired padding height
-        VBox timerVBox = new VBox(rectangle, bottomSpacer);
 
-        topBar.setSpacing(10); // Set spacing between the subcomponents
-        mainPane.setTop(topBar);
-        mainPane.setRight(rightBar);
+        VBox timerVBox = new VBox(rectangle);
+
         mainPane.setBottom(timerVBox);
 
         // Set what function is executed when a block, the main GameBoard, or the two PieceBoards
@@ -192,25 +201,94 @@ public class ChallengeScene extends BaseScene {
 
     }
 
-    private int getHighScore() {
-        // Get top high score
-        var inputStream = ScoresScene.class.getResourceAsStream("/scores.txt");
-
-        if (inputStream == null) {
-            throw new RuntimeException("File scores.txt not found in the resources directory");
+    public static String getJarDirectory() {
+        try {
+            // Get the path of the directory containing the jar file
+            return new File(ChallengeScene.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+        } catch (Exception e) {
+            // Fallback to current working directory if the above fails
+            return ".";
         }
+    }
 
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line = br.readLine();
-            if (line != null) {
-                return Integer.valueOf(line.split(":")[1]);
+    // TODO THIS COMMENT AND EVERYTHING INSIDE
+    // TODO add alert if file has been tampered with?
+    private int getHighScore() {
+        // TODO comment this variable?
+        int highScoreToReturn = Integer.valueOf(getDefaultScores().get(0).split(":")[1]);
+        try {
+            // Get the directory path where the jar file is located or current directory if run from code
+            String dirPath = getJarDirectory();
+            String filePath = dirPath + File.separator + "scores.txt";
+
+            // Check if the file exists, and create it if it doesn't
+            File scoresFile = new File(filePath);
+            if (!scoresFile.exists()) {
+                fillLocalFileWithDefaultScores(dirPath, filePath, scoresFile);
+                return highScoreToReturn;
             } else {
-                return 0;
+                // If file exists, read the first line from the file to get the high score
+                System.out.println("File already exists at: " + filePath);
+                BufferedReader reader = new BufferedReader(new FileReader(scoresFile));
+                String firstLine = reader.readLine();
+
+                // The format each line of the file should be in
+                Pattern pattern = Pattern.compile("^[a-zA-Z0-9]{1,16}:\\d+$");
+
+                // If first line isn't empty and matches the pattern
+                if (firstLine != null && pattern.matcher(firstLine).matches() && firstLine.endsWith("0")) {
+                        highScoreToReturn = Integer.valueOf(firstLine.split(":")[1]);
+                } else {
+                    fillLocalFileWithDefaultScores(dirPath, filePath, scoresFile);
+                    return highScoreToReturn;
+                }
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!pattern.matcher(line).matches() || !line.endsWith("0")) {
+                        fillLocalFileWithDefaultScores(dirPath, filePath, scoresFile);
+                        return highScoreToReturn;
+                    }
+                }
+                reader.close();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        return highScoreToReturn;
+    }
 
+    private void fillLocalFileWithDefaultScores(String dirPath, String filePath, File fileToBeCreated) throws IOException {
+        logger.info("FILLING LOCAL FILE WITH DEFAULT SCORES");
+        fileToBeCreated.createNewFile();
+        System.out.println("Created new file at: " + filePath);
+
+        // Fill file with default scores
+        FileWriter writer = new FileWriter(fileToBeCreated, false);
+        ArrayList<String> defaultScores = getDefaultScores();
+        for (String score : defaultScores) {
+            writer.write(score + "\n");
+        }
+        writer.close();
+    }
+
+    /**
+     * Default scores list for if there is no score file
+     * @return ArrayList of 10 default scores in the form "name:score"
+     */
+    private static ArrayList<String> getDefaultScores() {
+        ArrayList<String> defaultScores = new ArrayList<>();
+        defaultScores.add("John:10000");
+        defaultScores.add("John:9000");
+        defaultScores.add("John:8000");
+        defaultScores.add("John:7000");
+        defaultScores.add("John:6000");
+        defaultScores.add("John:5000");
+        defaultScores.add("John:4000");
+        defaultScores.add("John:3000");
+        defaultScores.add("John:2000");
+        defaultScores.add("John:1000");
+        return defaultScores;
     }
 
     /**

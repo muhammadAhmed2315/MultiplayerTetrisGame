@@ -178,6 +178,15 @@ public class Grid {
         return rows;
     }
 
+    /**
+     * Returns a flattened String representation of the Grid
+     * E.g., a grid of the following form:
+     * a b c
+     * d e f
+     * g h i
+     * is returned as "a b c d e f g h i"
+     * @return Flattened String representation of the Grid
+     */
     public String getFlattenedGrid() {
         String myGridString = "";
         for (int y = 0; y < rows; y++) {

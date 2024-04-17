@@ -1,5 +1,5 @@
 package uk.ac.soton.comp1206.game;
-
+ // TODO FIX ALL OF THE COMMENTS HERE
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.logging.log4j.LogManager;
@@ -71,7 +71,9 @@ public class MultiplayerGame extends Game {
      */
     private ScheduledExecutorService gameTimer;
 
-    // TODO this comment
+    /**
+     * Stores the upcoming pieces as received from the server
+     */
     private Queue<Integer> nextPiecesQueue = new LinkedList<>();
 
     /**
@@ -80,7 +82,9 @@ public class MultiplayerGame extends Game {
     private GamePiece currentPiece;
     private GamePiece nextPiece;
 
-    // TODO this comment
+    /**
+     * Used to communicate with the server. Needs to be passed in to the constructor.
+     */
     private Communicator communicator;
 
     /**
@@ -90,7 +94,6 @@ public class MultiplayerGame extends Game {
      */
     public MultiplayerGame(int cols, int rows, Communicator communicator) {
         super(cols, rows);
-
         this.communicator = communicator;
     }
 
@@ -218,6 +221,7 @@ public class MultiplayerGame extends Game {
         //logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
         // Clear the lines
         if (!blocksToBeCleared.isEmpty()) {
+            Multimedia.switchAudioFile("clear.wav");
             lineCleared(blocksToBeCleared);
             for (GameBlockCoordinate x : blocksToBeCleared) {
                 grid.set(x.getX(), x.getY(), 0);

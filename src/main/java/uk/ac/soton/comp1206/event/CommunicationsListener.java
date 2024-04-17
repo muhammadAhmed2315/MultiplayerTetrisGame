@@ -1,7 +1,7 @@
 package uk.ac.soton.comp1206.event;
 
 /**
- * The Communications Listener is used for listening to messages received by the communicator.
+ * The Communications Listener is used for handling messages received by the communicator.
  */
 public interface CommunicationsListener {
 

@@ -7,11 +7,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.effect.Glow;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Paint;
-import javafx.scene.paint.Stop;
+import javafx.scene.paint.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -50,9 +46,19 @@ public class GameBlock extends Canvas {
         Color.PURPLE
     };
 
+    /**
+     * The board this GameBlock belongs to
+     */
     private final GameBoard gameBoard;
 
+    /**
+     * Width of the GameBlock component
+     */
     private final double width;
+
+    /**
+     * Height of the GameBlock component
+     */
     private final double height;
 
     /**
@@ -207,8 +213,8 @@ public class GameBlock extends Canvas {
         // Gradient fill
         Color lightColor = ((Color) colour).interpolate(Color.WHITE, 0.3);
         Stop[] stops = new Stop[] {
-            new Stop(0, lightColor),
-            new Stop(1, (Color) colour)
+                new Stop(0, lightColor),
+                new Stop(1, (Color) colour)
         };
         LinearGradient gradient = new LinearGradient(0, 0, 0, height, true, CycleMethod.NO_CYCLE, stops);
         gc.setFill(gradient);
@@ -285,6 +291,9 @@ public class GameBlock extends Canvas {
         value.bind(input);
     }
 
+    /**
+     * TODO is this method even needed?
+     */
     @Override
     public String toString() {
         return "GameBlock{" +

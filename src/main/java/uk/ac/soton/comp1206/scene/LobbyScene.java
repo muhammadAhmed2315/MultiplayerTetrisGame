@@ -1,6 +1,7 @@
 package uk.ac.soton.comp1206.scene;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
+import uk.ac.soton.comp1206.utility.Multimedia;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +50,8 @@ public class LobbyScene extends BaseScene {
         root.getChildren().add(challengePane);
 
         var contentVBox = new VBox();
-        contentVBox.setAlignment(Pos.CENTER);
+        contentVBox.setPadding(new Insets(10, 10, 10, 10));
+        contentVBox.setAlignment(Pos.TOP_CENTER);
         challengePane.getChildren().add(contentVBox);
 
         // HBox for Multiplayer heading at the top of the screen
@@ -71,15 +74,27 @@ public class LobbyScene extends BaseScene {
             gameWindow.getCommunicator().send("CREATE " + newChannelNameTextField.getText());
             newChannelNameTextField.clear();
             newChannelNameTextField.setVisible(false);
+            gameWindow.getCommunicator().send("LIST");
         });
 
         hostNewGameHeading.setOnMouseClicked((event) -> {
+            Multimedia.switchAudioFile("rotate.wav");
             newChannelNameTextField.setVisible(true);
         });
 
         VBox channelsList = new VBox();
+        ScrollPane channelScroller = new ScrollPane();
+        VBox.setVgrow(channelScroller, Priority.ALWAYS);
+        channelScroller.setContent(channelsList);
 
-        VBox leftSectionVBox = new VBox(currentGamesHeading, hostNewGameHeading, newChannelNameTextField, channelsList);
+        // Set the background of the ScrollPane to be transparent
+        channelScroller.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        // Making the viewport transparent
+        channelScroller.viewportBoundsProperty().addListener((obs, oldVal, newVal) -> {
+            channelScroller.lookup(".viewport").setStyle("-fx-background-color: transparent;");
+        });
+
+        VBox leftSectionVBox = new VBox(currentGamesHeading, hostNewGameHeading, newChannelNameTextField, channelScroller);
 
         // Right hand side of the screen containing the channel name heading and the chat box
         Label chatboxHeading = new Label();
@@ -87,10 +102,8 @@ public class LobbyScene extends BaseScene {
 
         HBox usersList = new HBox();
 
-        Label chatBoxInfoTextOne = new Label("Welcome to the lobby");
-        chatBoxInfoTextOne.getStyleClass().add("messages");
-        Label chatBoxInfoTextTwo = new Label("Type /nick NewName to change your name");
-        chatBoxInfoTextTwo.getStyleClass().add("messages");
+        Label chatBoxInfoText = new Label("Welcome to the lobby \n Type /nick NewName to change your name");
+        chatBoxInfoText.getStyleClass().add("messages");
 
         Button startGameButton = new Button("Start game");
         startGameButton.setVisible(false);
@@ -124,15 +137,22 @@ public class LobbyScene extends BaseScene {
 
         HBox chatBoxButtons = new HBox(startGameButton, space, leaveGameButton);
 
-        VBox chatBox = new VBox(usersList, chatBoxInfoTextOne, chatBoxInfoTextTwo, messagesScroller, messageInputField, chatBoxButtons);
+        VBox chatBox = new VBox(usersList, chatBoxInfoText, messagesScroller, messageInputField, chatBoxButtons);
         chatBox.setPrefWidth(480);
         chatBox.setPrefHeight(425);
-        chatBox.setStyle("-fx-border-color: white; -fx-border-width: 2;");
+        chatBox.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: white; -fx-border-width: 2;");
+        chatBox.setSpacing(10);
+        chatBox.setPadding(new Insets(10, 10, 10, 10));
 
         VBox rightSectionVBox = new VBox(chatboxHeading, chatBox);
         rightSectionVBox.setVisible(false);
+        rightSectionVBox.setSpacing(10);
 
-        HBox mainContentHBox = new HBox(leftSectionVBox, rightSectionVBox);
+        // Horizontal region to separate the channels list and the chatbox
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox mainContentHBox = new HBox(leftSectionVBox, spacer, rightSectionVBox);
         contentVBox.getChildren().addAll(headingHBox, mainContentHBox);
 
         leaveGameButton.setOnMouseClicked((event) -> {
@@ -171,6 +191,7 @@ public class LobbyScene extends BaseScene {
                     }
                 });
             } else if (message.startsWith("JOIN ")) {
+                Multimedia.switchAudioFile("message.wav");
                 // Makes the chatbox visible once the user has joined a lobby
                 String finalMessage = message.split(" ")[1];
                 Platform.runLater(() -> {
@@ -196,6 +217,7 @@ public class LobbyScene extends BaseScene {
                 // If user becomes the host of a lobby he is currently in
                 startGameButton.setVisible(true);
             } else if (message.startsWith("MSG ")) {
+                Multimedia.switchAudioFile("message.wav");
                 message = message.substring(4);
                 String playerName = message.split(":")[0];
                 String playerMessage = message.split(":")[1];
@@ -216,9 +238,6 @@ public class LobbyScene extends BaseScene {
                 });
             }
         });
-
-
-
     }
 
     /**
@@ -230,7 +249,7 @@ public class LobbyScene extends BaseScene {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             switch (event.getCode()) {
                 case ESCAPE:
-                    gameWindow.getCommunicator().send("QUIT");
+                    gameWindow.getCommunicator().send("PART");
                     gameWindow.startMenu();
                     break;
             }

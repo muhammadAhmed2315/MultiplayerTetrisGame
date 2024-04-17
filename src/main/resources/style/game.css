@@ -21,17 +21,16 @@
 }
 
 .menuItem {
-    -fx-fill: white;
+    -fx-text-fill: white;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 32px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
     -fx-stroke: black;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
 }
 
 .menuItem:hover {
-    -fx-fill: yellow;
+    -fx-text-fill: yellow;
 }
 
 .menuItem.selected {
@@ -59,7 +58,6 @@
 }
 
 .heading {
-    -fx-fill: white;
     -fx-text-fill: white;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 20px;
@@ -69,50 +67,47 @@
 }
 
 .score {
-    -fx-fill: yellow;
+    -fx-text-fill: yellow;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 36px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
     -fx-stroke: black;
     -fx-text-alignment: center;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
 }
 
 .level {
-    -fx-fill: #ff6600;
+    -fx-text-fill: #ff6600;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 24px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
     -fx-stroke: black;
     -fx-text-alignment: center;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
 }
 
 .hiscore {
-    -fx-fill: orange;
+    -fx-text-fill: orange;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 24px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
     -fx-stroke: black;
     -fx-text-alignment: center;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
 }
 
 .lives {
-    -fx-fill: yellow;
+    -fx-text-fill: yellow;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 36px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
     -fx-stroke: black;
     -fx-text-alignment: center;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
 }
 
 .scorelist {
+    -fx-text-fill: white;
     -fx-font-size: 20px;
     -fx-font-family: 'Orbitron';
 }
@@ -142,11 +137,9 @@
 
 .channelItem {
     -fx-text-fill: white;
-    -fx-fill: white;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 16px;
     -fx-font-weight: 700;
-    -fx-border-color: black;
     -fx-stroke: black;
 }
 .channelItem.selected {
@@ -180,7 +173,7 @@
 }
 
 .messages Text {
-    -fx-fill: white;
+    -fx-text-fill: white;
 }
 
 TextField {
@@ -207,5 +200,5 @@ TextField {
 .instructions {
     -fx-font-size: 10px;
     -fx-font-family: 'Orbitron';
-    -fx-fill: white;
+    -fx-text-fill: white;
 }
