@@ -1,5 +1,12 @@
 package uk.ac.soton.comp1206.game;
- // TODO FIX ALL OF THE COMMENTS HERE
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.logging.log4j.LogManager;
@@ -12,24 +19,14 @@ import uk.ac.soton.comp1206.event.NextPieceListener;
 import uk.ac.soton.comp1206.network.Communicator;
 import uk.ac.soton.comp1206.utility.Multimedia;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
- * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
- * and to handle actions made by the player should take place inside this class.
+ * The MultiplayerGame class handles the main logic, state and properties of a multiplayer game.
+ * Methods to manipulate the game state and to handle actions made by the player should take place
+ * inside this class.
  */
 public class MultiplayerGame extends Game {
 
     private static final Logger logger = LogManager.getLogger(Game.class);
-
-    private Random random = new Random();
 
     /**
      * Listener for handling when the next piece
@@ -49,7 +46,7 @@ public class MultiplayerGame extends Game {
     /**
      * User score
      */
-    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(0);
+    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(300);
 
     /**
      * Score multiplier
@@ -127,10 +124,15 @@ public class MultiplayerGame extends Game {
             }
         });
 
+        /**
+         * Request 5 pieces at the start to create a "buffer" so that when requesting future pieces,
+         * the user won't notice a delay because of the server taking time to respond
+         */
         for (int i = 0; i < 5; i++) {
             communicator.send("PIECE");
         }
 
+        // Start the gameTimer
         gameTimer = Executors.newSingleThreadScheduledExecutor();
         gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
         gameLoopListener.handle(getTimerDelay());
@@ -147,16 +149,17 @@ public class MultiplayerGame extends Game {
                 livesRemaining.set(livesRemaining.get() - 1);
                 communicator.send("LIVES " + livesRemaining.get());
                 Multimedia.switchAudioFile("lifelose.wav");
-                //logger.info("Lives remaining: {}", livesRemaining.get());
+                logger.info("Lives remaining: {}", livesRemaining.get());
                 nextPiece();
                 scoreMultiplier.set(1);
             });
         } else {
             Platform.runLater(() -> {
                 livesRemaining.set(livesRemaining.get() - 1);
+                communicator.send("SCORES");
                 communicator.send("DIE");
             });
-            //logger.info("Game over");
+            logger.info("Game over");
             Multimedia.switchAudioFile("explode.wav");
             gameTimer.shutdown();
         }
@@ -174,7 +177,7 @@ public class MultiplayerGame extends Game {
      * @return how long the user has to play a piece
      */
     private int getTimerDelay() {
-        return 12000 - (500 * gameLevel.intValue()); // TODO 12000
+        return 12000 - (500 * gameLevel.intValue());
     }
 
     /**
@@ -218,7 +221,7 @@ public class MultiplayerGame extends Game {
                 lineCounter++;
             }
         }
-        //logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
+        logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
         // Clear the lines
         if (!blocksToBeCleared.isEmpty()) {
             Multimedia.switchAudioFile("clear.wav");
@@ -230,7 +233,7 @@ public class MultiplayerGame extends Game {
             int oldGameLevel = gameLevel.intValue();
             int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
             userScore.set(userScore.get() + incScoreBy);
-            //logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
+            logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
             scoreMultiplier.set(scoreMultiplier.get() + 1);
             gameLevel.set(userScore.get() / 1000);
 
@@ -239,14 +242,6 @@ public class MultiplayerGame extends Game {
                 Multimedia.switchAudioFile("level.wav");
             }
 
-            // Resets the timer to 0 and starts it again if the user correctly places a piece
-            // Timer is set to a new timer delay (in case the timer delay has changed)
-            gameTimer.shutdownNow();
-            gameTimer = Executors.newSingleThreadScheduledExecutor();
-            gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
-            if (gameLoopListener != null) {
-                gameLoopListener.handle(getTimerDelay());
-            }
         } else {
             scoreMultiplier.set(1);
         }
@@ -277,13 +272,13 @@ public class MultiplayerGame extends Game {
      */
     public void nextPiece() {
         currentPiece = nextPiece;
-        //logger.info("The next piece is: {}", currentPiece);
+        logger.info("The next piece is: {}", currentPiece);
 
         nextPiece = spawnPiece();
-        //logger.info("The following piece is: {}", nextPiece);
+        logger.info("The following piece is: {}", nextPiece);
 
         if (nextPieceListener != null) {
-            //logger.info("Passing new piece to the nextPieceListener");
+            logger.info("Passing new piece to the nextPieceListener");
             nextPieceListener.nextPiece(currentPiece, nextPiece);
         }
     }
@@ -336,7 +331,7 @@ public class MultiplayerGame extends Game {
      * Swaps the current piece with the next piece
      */
     public void swapCurrentPiece() {
-        //logger.info("Swapping current piece with the upcoming piece");
+        logger.info("Swapping current piece with the upcoming piece");
         var temp = nextPiece;
         nextPiece = currentPiece;
         currentPiece = temp;
@@ -344,23 +339,36 @@ public class MultiplayerGame extends Game {
         nextPieceListener.nextPiece(currentPiece, nextPiece);
     }
 
-    // Sets nextPieceListener
+    /**
+     * Attaches a NextPieceListener to the MultiplayerGame instance
+     * @param nextPieceListener NextPieceListener to be attached to the Game instance
+     */
     public void setNextPieceListener(NextPieceListener nextPieceListener) {
         this.nextPieceListener = nextPieceListener;
     }
 
-    // Sets lineClearedListener
+    /**
+     * Attaches a lineClearedListener to the MultiplayerGame instance
+     * @param lineClearedListener LineClearedListener to be attached to the Game instance
+     */
     public void setOnLineClear(LineClearedListener lineClearedListener) {
         this.lineClearedListener = lineClearedListener;
     }
 
-    // Calls event handling code for when a line needs to be cleared
+    /**
+     * Calls event handling code for when a line needs to be cleared
+     * @param blocksToBeCleared Set of blocks that need to be cleared
+     */
     private void lineCleared(HashSet<GameBlockCoordinate> blocksToBeCleared) {
         if(lineClearedListener != null) {
             lineClearedListener.handle(blocksToBeCleared);
         }
     }
 
+    /**
+     * Attaches a GameLoopListener to the MultiplayerGame instance
+     * @param gameLoopListener GameLoopListener to be attached to the Game instance
+     */
     public void setGameLoopListener(GameLoopListener gameLoopListener) {
         this.gameLoopListener = gameLoopListener;
     }

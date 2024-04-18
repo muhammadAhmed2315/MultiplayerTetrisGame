@@ -18,8 +18,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The Game class handles the main logic, state and properties of the TetrECS game. Methods to manipulate the game state
- * and to handle actions made by the player should take place inside this class.
+ * The Game class handles the main logic, state and properties of a single player game. Methods to
+ * manipulate the game state and to handle actions made by the player should take place inside this
+ * class.
  */
 public class Game {
 
@@ -55,7 +56,7 @@ public class Game {
     /**
      * User score
      */
-    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(150); // TODO CHANGE THIS BACK TO 0
+    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(0);
 
     /**
      * Score multiplier
@@ -81,7 +82,15 @@ public class Game {
      * The grid model linked to the game
      */
     protected final Grid grid;
+
+    /**
+     * The current piece that the user can place and swap with the nextPiece if they want to
+     */
     private GamePiece currentPiece;
+
+    /**
+     * The next piece that the user can place and swap with the currentPiece if they want to
+     */
     private GamePiece nextPiece;
 
     /**
@@ -123,19 +132,21 @@ public class Game {
      */
     private void gameLoop() {
         logger.info("Single player game loop triggered");
+        // If user loses a life and has greater than 0 lives
         if (livesRemaining.get() > 0) {
             Platform.runLater(() -> {
                 livesRemaining.set(livesRemaining.get() - 1);
                 Multimedia.switchAudioFile("lifelose.wav");
-                //logger.info("Lives remaining: {}", livesRemaining.get());
+                logger.info("Lives remaining: {}", livesRemaining.get());
                 nextPiece();
                 scoreMultiplier.set(1);
             });
         } else {
+            // If user loses a life and has less than 0 lives
             Platform.runLater(() -> {
                 livesRemaining.set(livesRemaining.get() - 1);
             });
-            //logger.info("Game over");
+            logger.info("Game over");
             Multimedia.switchAudioFile("explode.wav");
             gameTimer.shutdown();
         }
@@ -153,7 +164,7 @@ public class Game {
      * @return how long the user has to play a piece
      */
     private int getTimerDelay() {
-        return 150 - (500 * gameLevel.intValue()); // TODO 12000
+        return 500 - (500 * gameLevel.intValue());
     }
 
     /**
@@ -197,7 +208,7 @@ public class Game {
                 lineCounter++;
             }
         }
-        //logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
+        logger.info("Line clearing function: found {} lines containing {} blocks", lineCounter, blocksToBeCleared.size());
         // Clear the lines
         if (!blocksToBeCleared.isEmpty()) {
             Multimedia.switchAudioFile("clear.wav");
@@ -209,22 +220,13 @@ public class Game {
             int oldGameLevel = gameLevel.intValue();
             int incScoreBy = calculateScore(lineCounter, blocksToBeCleared.size());
             userScore.set(userScore.get() + incScoreBy);
-            //logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
+            logger.info("Increasing score by {}, new score = {}", incScoreBy, userScore);
             scoreMultiplier.set(scoreMultiplier.get() + 1);
             gameLevel.set(userScore.get() / 1000);
 
             // If levelled up, play the level up sound
             if (gameLevel.intValue() != oldGameLevel) {
                 Multimedia.switchAudioFile("level.wav");
-            }
-
-            // Resets the timer to 0 and starts it again if the user correctly places a piece
-            // Timer is set to a new timer delay (in case the timer delay has changed)
-            gameTimer.shutdownNow();
-            gameTimer = Executors.newSingleThreadScheduledExecutor();
-            gameTimer.scheduleAtFixedRate(this::gameLoop, getTimerDelay(), getTimerDelay(), TimeUnit.MILLISECONDS);
-            if (gameLoopListener != null) {
-                gameLoopListener.handle(getTimerDelay());
             }
         } else {
             scoreMultiplier.set(1);
@@ -256,13 +258,13 @@ public class Game {
      */
     public void nextPiece() {
         currentPiece = nextPiece;
-        //logger.info("The next piece is: {}", currentPiece);
+        logger.info("The next piece is: {}", currentPiece);
 
         nextPiece = spawnPiece();
-        //logger.info("The following piece is: {}", nextPiece);
+        logger.info("The following piece is: {}", nextPiece);
 
         if (nextPieceListener != null) {
-            //logger.info("Passing new piece to the nextPieceListener");
+            logger.info("Passing new piece to the nextPieceListener");
             nextPieceListener.nextPiece(currentPiece, nextPiece);
         }
     }
@@ -274,7 +276,7 @@ public class Game {
     public GamePiece spawnPiece() {
         int maxPieces = GamePiece.PIECES;
         int randomPiece = random.nextInt(maxPieces);
-        //logger.info("Picking random piece: {}", randomPiece);
+        logger.info("Picking random piece: {}", randomPiece);
         var piece = GamePiece.createPiece(randomPiece);
         return piece;
     }
@@ -314,7 +316,7 @@ public class Game {
      * Swaps the current piece with the next piece
      */
     public void swapCurrentPiece() {
-        //logger.info("Swapping current piece with the upcoming piece");
+        logger.info("Swapping current piece with the upcoming piece");
         var temp = nextPiece;
         nextPiece = currentPiece;
         currentPiece = temp;

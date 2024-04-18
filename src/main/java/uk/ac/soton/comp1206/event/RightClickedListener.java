@@ -9,5 +9,5 @@ public interface RightClickedListener {
      * Called when a GameBoard or PieceBoard is mouse clicked.
      * Implementing classes should provide the necessary logic to handle the mouse click event.
      */
-    public void handle();
+    void handle();
 }

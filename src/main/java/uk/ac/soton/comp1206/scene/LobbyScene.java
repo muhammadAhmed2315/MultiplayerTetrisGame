@@ -1,24 +1,29 @@
 package uk.ac.soton.comp1206.scene;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Timer;
+import java.util.TimerTask;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
-
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class LobbyScene extends BaseScene {
 
@@ -31,7 +36,7 @@ public class LobbyScene extends BaseScene {
      */
     public LobbyScene(GameWindow gameWindow) {
         super(gameWindow);
-        //logger.info("Creating Lobby Scene");
+        logger.info("Creating Lobby Scene");
     }
 
     /**
@@ -39,8 +44,9 @@ public class LobbyScene extends BaseScene {
      */
     @Override
     public void build() {
-        //logger.info("Building " + this.getClass().getName());
+        logger.info("Building " + this.getClass().getName());
 
+        // Basic UI setup
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
         var challengePane = new StackPane();
@@ -71,10 +77,9 @@ public class LobbyScene extends BaseScene {
         TextField newChannelNameTextField = new TextField();
         newChannelNameTextField.setVisible(false);
         newChannelNameTextField.setOnAction((event) -> {
-            gameWindow.getCommunicator().send("CREATE " + newChannelNameTextField.getText());
-            newChannelNameTextField.clear();
-            newChannelNameTextField.setVisible(false);
-            gameWindow.getCommunicator().send("LIST");
+                gameWindow.getCommunicator().send("CREATE " + newChannelNameTextField.getText());
+                newChannelNameTextField.clear();
+                newChannelNameTextField.setVisible(false);
         });
 
         hostNewGameHeading.setOnMouseClicked((event) -> {
@@ -110,7 +115,6 @@ public class LobbyScene extends BaseScene {
         Button leaveGameButton = new Button("Leave game");
         Region space = new Region();
         HBox.setHgrow(space, Priority.ALWAYS);
-
 
         VBox messagesList = new VBox();
         ScrollPane messagesScroller = new ScrollPane();
@@ -192,14 +196,15 @@ public class LobbyScene extends BaseScene {
                 });
             } else if (message.startsWith("JOIN ")) {
                 Multimedia.switchAudioFile("message.wav");
-                // Makes the chatbox visible once the user has joined a lobby
+                // Makes the chat box visible once the user has joined a lobby
                 String finalMessage = message.split(" ")[1];
                 Platform.runLater(() -> {
+                    gameWindow.getCommunicator().send("LIST");
                     chatboxHeading.setText(finalMessage);
                     rightSectionVBox.setVisible(true);
                 });
             } else if (message.startsWith("USERS ")) {
-                // Updates user list at the top of the chatbox
+                // Updates user list at the top of the chat box
                 message = message.split(" ")[1];
                 String[] users = message.split("\n");
                 Platform.runLater(() -> {
@@ -212,11 +217,17 @@ public class LobbyScene extends BaseScene {
                 });
             } else if (message.equals("PARTED")) {
                 // If user leaves a lobby
+                gameWindow.getCommunicator().send("LIST");
                 rightSectionVBox.setVisible(false);
+                Platform.runLater(() -> {
+                    messagesList.getChildren().clear();
+                    rightSectionVBox.setVisible(false);
+                });
             } else if (message.equals("HOST")) {
                 // If user becomes the host of a lobby he is currently in
                 startGameButton.setVisible(true);
             } else if (message.startsWith("MSG ")) {
+                // Change messageLabel to the following form: <HH:MM> playerName:message
                 Multimedia.switchAudioFile("message.wav");
                 message = message.substring(4);
                 String playerName = message.split(":")[0];
@@ -235,6 +246,18 @@ public class LobbyScene extends BaseScene {
                 Platform.runLater(() -> {
                     gameWindow.startMultiplayerGame();
                     timer.cancel();
+                });
+            } else if (message.startsWith("ERROR ")) {
+                message = message.substring(6);
+                String finalMessage1 = message;
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("Error");
+                    alert.setContentText(finalMessage1);
+
+                    // Display the alert and wait for a response
+                    alert.showAndWait();
                 });
             }
         });

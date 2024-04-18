@@ -1,5 +1,12 @@
 package uk.ac.soton.comp1206.scene;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -8,7 +15,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -22,10 +34,6 @@ import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 /**
  * The Single Player challenge scene. Holds the UI for the single player challenge mode in the game.
@@ -54,6 +62,7 @@ public class ChallengeScene extends BaseScene {
 
         setupGame();
 
+        // Basic UI setup
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
         var challengePane = new StackPane();
@@ -70,9 +79,7 @@ public class ChallengeScene extends BaseScene {
         board = new GameBoard(game.getGrid(),gameWindow.getWidth()/2,gameWindow.getWidth()/2);
         mainPane.setCenter(board);
 
-        // Bar at the top of the screen showing the score on the left and the lives remaining
-        // on the right
-        // HBox containing score and lives
+        // Bar the top of the screen showing a HBox containing the score, title, and lives remaining
         Label scoreHeading = new Label("Score");
         Label actualScore = new Label("0");
         scoreHeading.getStyleClass().add("heading");
@@ -100,7 +107,10 @@ public class ChallengeScene extends BaseScene {
         topBar.setAlignment(Pos.CENTER);
         mainPane.setTop(topBar);
 
-        // Bar on the right hand side, showing the high score, level, current piece, and next piece
+        /*
+          Bar on the right hand side, containing a VBox showing the local high score, level, current
+          piece, and next piece
+         */
         Label highScoreHeading = new Label("High Score");
         Label actualHighScore = new Label(Integer.toString(getHighScore()));
         highScoreHeading.getStyleClass().add("heading");
@@ -118,6 +128,10 @@ public class ChallengeScene extends BaseScene {
         Label incomingLabel = new Label("Incoming");
         incomingLabel.getStyleClass().add("heading");
 
+        /*
+          Update the local high score text to the user's current score if the user's current
+          score is higher
+         */
         game.getUserScore().addListener((ObservableValue, oldValue, newValue) -> {
             if (game.getUserScore().intValue() > Integer.valueOf(actualHighScore.getText())) {
                 actualHighScore.setText(Integer.toString(game.getUserScore().intValue()));
@@ -127,6 +141,9 @@ public class ChallengeScene extends BaseScene {
         PieceBoard currentPieceBoard = new PieceBoard(3, 3, 132, 132, true);
         PieceBoard nextPieceBoard = new PieceBoard(3, 3, 80, 80, false);
 
+        /*
+          Update the currentPieceBoard and nextPieceBoard displays when necessary
+         */
         game.setNextPieceListener(((currentGamePiece, nextGamePiece) -> {
             currentPieceBoard.displayPiece(currentGamePiece);
             nextPieceBoard.displayPiece(nextGamePiece);
@@ -142,15 +159,17 @@ public class ChallengeScene extends BaseScene {
         Bindings.bindBidirectional(actualLevel.textProperty(), game.getGameLevel(), new NumberStringConverter());
         Bindings.bindBidirectional(actualLives.textProperty(), game.getLivesRemaining(), new NumberStringConverter());
 
+        /*
+          Switch to local high scores scene if the game ends
+         */
         actualLives.textProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue.equals("-1")) {
-                gameWindow.startScores(game);
+                gameWindow.startLocalScores(game);
                 endGame();
             }
         });
 
         mainPane.setRight(rightBar);
-
 
         // Timer bar at the bottom of the screen
         Rectangle rectangle = new Rectangle(gameWindow.getWidth() - 20, (double) gameWindow.getHeight() / 30);
@@ -181,8 +200,10 @@ public class ChallengeScene extends BaseScene {
 
         mainPane.setBottom(timerVBox);
 
-        // Set what function is executed when a block, the main GameBoard, or the two PieceBoards
-        // are clicked
+        /*
+          Set what functions are executed when a block, the main GameBoard, or the two PieceBoards
+          are clicked
+         */
         board.setOnBlockClick(this::blockClicked);
         board.setOnRightClick(this::GameBoardClicked);
         currentPieceBoard.setOnRightClick(this::GameBoardClicked);
@@ -201,6 +222,11 @@ public class ChallengeScene extends BaseScene {
 
     }
 
+
+    /**
+     * Returns the path of the directory containing the jar file
+     * @return Path of the directory containing the jar file
+     */
     public static String getJarDirectory() {
         try {
             // Get the path of the directory containing the jar file
@@ -211,10 +237,14 @@ public class ChallengeScene extends BaseScene {
         }
     }
 
-    // TODO THIS COMMENT AND EVERYTHING INSIDE
-    // TODO add alert if file has been tampered with?
+    /**
+     * Gets the local highest score from the scores.txt file. If the file's contents don't match
+     * the required format, then it wipes the file and fills it with default scores. If the file
+     * doesn't exist, it creates a scores.txt file and fills it with default scores.
+     * a scores.txt file and fills it with default scores.
+     * @return Highest score from scores.txt file
+     */
     private int getHighScore() {
-        // TODO comment this variable?
         int highScoreToReturn = Integer.valueOf(getDefaultScores().get(0).split(":")[1]);
         try {
             // Get the directory path where the jar file is located or current directory if run from code
@@ -224,7 +254,7 @@ public class ChallengeScene extends BaseScene {
             // Check if the file exists, and create it if it doesn't
             File scoresFile = new File(filePath);
             if (!scoresFile.exists()) {
-                fillLocalFileWithDefaultScores(dirPath, filePath, scoresFile);
+                fillLocalFileWithDefaultScores(scoresFile);
                 return highScoreToReturn;
             } else {
                 // If file exists, read the first line from the file to get the high score
@@ -239,14 +269,15 @@ public class ChallengeScene extends BaseScene {
                 if (firstLine != null && pattern.matcher(firstLine).matches() && firstLine.endsWith("0")) {
                         highScoreToReturn = Integer.valueOf(firstLine.split(":")[1]);
                 } else {
-                    fillLocalFileWithDefaultScores(dirPath, filePath, scoresFile);
+                    fillLocalFileWithDefaultScores(scoresFile);
                     return highScoreToReturn;
                 }
 
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    // If a line doesn't match the required format
                     if (!pattern.matcher(line).matches() || !line.endsWith("0")) {
-                        fillLocalFileWithDefaultScores(dirPath, filePath, scoresFile);
+                        fillLocalFileWithDefaultScores(scoresFile);
                         return highScoreToReturn;
                     }
                 }
@@ -258,10 +289,13 @@ public class ChallengeScene extends BaseScene {
         return highScoreToReturn;
     }
 
-    private void fillLocalFileWithDefaultScores(String dirPath, String filePath, File fileToBeCreated) throws IOException {
+    /**
+     * Creates a new scores.txt file and fills it with default scores
+     * @param fileToBeCreated File to be created in a directory
+     */
+    private void fillLocalFileWithDefaultScores(File fileToBeCreated) throws IOException {
         logger.info("FILLING LOCAL FILE WITH DEFAULT SCORES");
         fileToBeCreated.createNewFile();
-        System.out.println("Created new file at: " + filePath);
 
         // Fill file with default scores
         FileWriter writer = new FileWriter(fileToBeCreated, false);
@@ -325,7 +359,7 @@ public class ChallengeScene extends BaseScene {
      * Cleanup code before the game is ended
      */
     public void endGame() {
-        //logger.info("Ending the game");
+        logger.info("Ending the game");
         game.gameTimerShutdown();
         game = null;
     }

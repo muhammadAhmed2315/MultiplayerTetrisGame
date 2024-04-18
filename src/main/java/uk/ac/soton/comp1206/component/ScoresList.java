@@ -10,12 +10,21 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.util.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import uk.ac.soton.comp1206.game.Game;
 
 /**
  * Specialised component for showing the list of high scores at the end of a game.
  */
 public class ScoresList extends VBox {
-  private final SimpleListProperty<Pair<String, Integer>> scores = new SimpleListProperty<>();
+
+    private static final Logger logger = LogManager.getLogger(Game.class);
+
+    /**
+     * List of scores to be displayed
+     */
+    private final SimpleListProperty<Pair<String, Integer>> scores = new SimpleListProperty<>();
 
     public ScoresList(ObservableList<Pair<String, Integer>> scores) {
         this.scores.set(scores);

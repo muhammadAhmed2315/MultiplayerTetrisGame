@@ -38,11 +38,10 @@
 }
 
 .bigtitle {
-    -fx-fill: yellow;
+    -fx-text-fill: yellow;
     -fx-font-family: 'Orbitron';
     -fx-font-size: 64px;
     -fx-font-weight: 900;
-    -fx-border-color: black;
     -fx-stroke: black;
     -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
 }

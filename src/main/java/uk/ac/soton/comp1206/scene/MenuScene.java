@@ -14,7 +14,6 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.ac.soton.comp1206.App;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
@@ -32,7 +31,7 @@ public class MenuScene extends BaseScene {
      */
     public MenuScene(GameWindow gameWindow) {
         super(gameWindow);
-        //logger.info("Creating Menu Scene");
+        logger.info("Creating Menu Scene");
     }
 
     /**
@@ -40,10 +39,11 @@ public class MenuScene extends BaseScene {
      */
     @Override
     public void build() {
-        //logger.info("Building " + this.getClass().getName());
+        logger.info("Building " + this.getClass().getName());
 
         root = new GamePane(gameWindow.getWidth(),gameWindow.getHeight());
 
+        // Basic UI setup
         var menuPane = new StackPane();
         menuPane.setMaxWidth(gameWindow.getWidth());
         menuPane.setMaxHeight(gameWindow.getHeight());
@@ -105,7 +105,6 @@ public class MenuScene extends BaseScene {
         mainPane.setAlignment(Pos.CENTER);
 
         Multimedia.switchBackgroundMusic("menu.mp3");
-
     }
 
     /**

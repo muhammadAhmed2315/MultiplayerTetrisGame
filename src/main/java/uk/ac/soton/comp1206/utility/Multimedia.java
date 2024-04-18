@@ -34,7 +34,7 @@ public class Multimedia {
      * @param fileName file name of sound effect to be played
      */
     public static void playAudioFile(String fileName) {
-        //logger.info("Attempting to play sound effect {}", fileName);
+        logger.info("Attempting to play sound effect {}", fileName);
         if (!audioFiles.containsKey(fileName) || audioFiles.get(fileName)) {
             try {
                 var filePath = Multimedia.class.getResource("/sounds/" + fileName).toExternalForm();
@@ -42,7 +42,7 @@ public class Multimedia {
                 audioPlayer = new MediaPlayer(sound);
                 audioPlayer.setVolume(1);
                 audioPlayer.play();
-                //logger.info("Sound effect {} successfully played", fileName);
+                logger.info("Sound effect {} successfully played", fileName);
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.error("Unable to play sound: " + fileName);
@@ -58,7 +58,7 @@ public class Multimedia {
      * @param fileName file name of background music to be played
      */
     public static void playBackgroundMusic(String fileName) {
-        //logger.info("Attempting to play background music {}", fileName);
+        logger.info("Attempting to play background music {}", fileName);
         try {
             var filePath = Multimedia.class.getResource("/music/" + fileName).toExternalForm();
             Media sound = new Media(filePath);
@@ -66,7 +66,7 @@ public class Multimedia {
             musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
             musicPlayer.setVolume(1);
             musicPlayer.play();
-            //logger.info("Background music {} successfully played", fileName);
+            logger.info("Background music {} successfully played", fileName);
         } catch (Exception e) {
             e.printStackTrace();
             logger.error("Unable to play sound: " + fileName);
@@ -79,7 +79,7 @@ public class Multimedia {
      * @param fileName file name of background music to be played
      */
     public static void switchBackgroundMusic(String fileName) {
-        //logger.info("Switching background music to {}", fileName);
+        logger.info("Switching background music to {}", fileName);
         // If other background music is already playing
         if (Multimedia.getMusicPlayer() != null) {
             Multimedia.getMusicPlayer().stop();
@@ -93,7 +93,7 @@ public class Multimedia {
      * @param fileName file name of sound effect to be played
      */
     public static void switchAudioFile(String fileName) {
-        //logger.info("Switching background music to {}", fileName);
+        logger.info("Switching background music to {}", fileName);
         // If other background music is already playing
         if (Multimedia.getAudioPlayer() != null) {
             Multimedia.getAudioPlayer().stop();

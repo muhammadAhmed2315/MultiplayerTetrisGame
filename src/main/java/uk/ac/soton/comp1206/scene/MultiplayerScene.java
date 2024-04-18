@@ -1,5 +1,13 @@
 package uk.ac.soton.comp1206.scene;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -12,7 +20,12 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -21,24 +34,47 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.component.GameBlock;
 import uk.ac.soton.comp1206.component.GameBoard;
+import uk.ac.soton.comp1206.component.OtherPlayerBoard;
 import uk.ac.soton.comp1206.component.PieceBoard;
 import uk.ac.soton.comp1206.game.MultiplayerGame;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
 /**
- * The Multi Player challenge scene. Holds the UI for the multi player challenge mode in the game.
+ * The Multi Player challenge scene. Holds the UI for the multiplayer challenge mode in the game.
  */
 public class MultiplayerScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
     protected MultiplayerGame game;
     protected GameBoard board;
+
+    /**
+     * Map containing player names as the keys, and the current state of their boards (in
+     * flattened string form)
+     */
+    private Map<String, String> playerBoards = new HashMap<>();
+
+    /**
+     * Represents which player's board is being shown right now
+     */
+    private int playerIndex = 0;
+
+    /**
+     * List containing all of the players playing the game
+     */
+    List<String> playerBoardsKeys;
+
+    /**
+     * Current player's nickname
+     */
+    private String playerNickname;
+
+    /**
+     * Map containing player names as the keys, and their current scores
+     */
+    private Map<String, Integer> playerScoresHashMap = new HashMap<>();
 
     /**
      * Determines whether the message input text field should be visible or not
@@ -63,8 +99,59 @@ public class MultiplayerScene extends BaseScene {
 
         setupGame();
 
-        logger.info("*******************************************************************");
+        AtomicInteger counter = new AtomicInteger();
 
+        gameWindow.getCommunicator().addListener((message) -> {
+            logger.info(message);
+            if (message.startsWith("USERS ")) {
+                // Remove "USERS " part from the message, leaving <User>\n<User>\n<User>...
+                message = message.substring(6);
+                String emptyFlattenedGrid = "";
+
+                // Flattened grid representation with every block holding a value of 0
+                for (int i = 0; i < game.getCols(); i++) {
+                    for (int j = 0; j < game.getRows(); j++) {
+                        emptyFlattenedGrid += "0 ";
+                    }
+                }
+                emptyFlattenedGrid = emptyFlattenedGrid.trim();
+
+                // If more than one user in the game
+                if (message.contains("\n")) {
+                    String[] usersArray = message.split("\n");
+
+                    // Assign each user an empty grid
+                    for (String user : usersArray) {
+                        playerBoards.put(user, emptyFlattenedGrid);
+                        playerScoresHashMap.put(user, 0);
+                    }
+
+                    // Create list of users
+                    playerBoardsKeys = new ArrayList<>(playerBoards.keySet());
+                    counter.getAndIncrement();
+                } else {
+                    // Assign just one player (the current user) an empty grid
+                    playerBoards.put(message, emptyFlattenedGrid);
+
+                    // Create list of users
+                    playerScoresHashMap.put(message, 0);
+                    playerBoardsKeys = new ArrayList<>(playerBoards.keySet());
+                    counter.getAndIncrement();
+                }
+            } else if (message.startsWith("NICK ")) {
+                // Set the playerNickname field to the player's nickname
+                playerNickname = message.substring(5);
+                counter.getAndIncrement();
+            }
+            if (counter.get() == 2) {
+                gameWindow.getCommunicator().clearListeners();
+            }
+        });
+
+        gameWindow.getCommunicator().send("USERS");
+        gameWindow.getCommunicator().send("NICK");
+
+        // Basic UI setup
         root = new GamePane(gameWindow.getWidth(), gameWindow.getHeight());
 
         var challengePane = new StackPane();
@@ -78,14 +165,14 @@ public class MultiplayerScene extends BaseScene {
         challengePane.getChildren().add(mainPane);
 
         board = new GameBoard(game.getGrid(), gameWindow.getWidth()/2, gameWindow.getWidth()/2);
-        mainPane.setCenter(board);
+        VBox boardAndChatVBox = new VBox(board);
+        mainPane.setCenter(boardAndChatVBox);
 
-        // Bar at the top of the screen showing the score on the left and the lives remaining
-        // on the right
-        // HBox containing score and lives
-        gameWindow.getCommunicator().send("NICK");
-
-        Label scoreHeading = new Label();
+        /*
+          Bar at the top of the screen containing a VBox, which contains the player score, title,
+          and lives
+         */
+        Label scoreHeading = new Label(playerNickname);
         Label actualScore = new Label("0");
         scoreHeading.getStyleClass().add("heading");
         actualScore.getStyleClass().add("score");
@@ -109,12 +196,50 @@ public class MultiplayerScene extends BaseScene {
         HBox topBar = new HBox(scoreVBox, spacerOne, sceneTitleLabel, spacerTwo, livesVBox);
         topBar.setAlignment(Pos.CENTER);
 
-        // Bar on the right hand side, showing the high score, next piece, and the level
+        /*
+          Bar on the right hand side containing a VBox that contains: a representation of another
+          player's board (user can switch which player's board is being shown), player scoreboard,
+          current piece, and next piece
+         */
+        Label otherPlayerBoardHeading;
+        OtherPlayerBoard otherPlayerBoard;
+        VBox rightBar = new VBox();
+
+        otherPlayerBoardHeading = new Label(playerBoardsKeys.get(playerIndex));
+        otherPlayerBoardHeading.getStyleClass().add("heading");
+
+        otherPlayerBoard = new OtherPlayerBoard(5, 5, 100, 100);
+        otherPlayerBoard.updateBoard(playerBoards.get(playerBoardsKeys.get(playerIndex)));
+
+        otherPlayerBoard.setOnMouseClicked((event) -> {
+            // Skip over the user's own board by incrementing playerIndex
+            if (playerBoardsKeys.get(playerIndex).equals(playerNickname)) {
+                playerIndex = (playerIndex + 1) % playerBoardsKeys.size();
+            }
+
+            // Change heading to player whose board is being shown
+            otherPlayerBoardHeading.setText(playerBoardsKeys.get(playerIndex));
+
+            // Update the board to the player it belongs to
+            otherPlayerBoard.updateBoard(playerBoards.get(playerBoardsKeys.get(playerIndex)));
+
+            // Increment the playerIndex
+            playerIndex = (playerIndex + 1) % playerBoardsKeys.size();
+        });
+
+        rightBar.getChildren().addAll(otherPlayerBoardHeading, otherPlayerBoard);
+
+        // Don't show otherPlayerBoard if user is playing alone
+        if (playerBoards.size() == 1) {
+            otherPlayerBoardHeading.setVisible(false);
+            otherPlayerBoard.setVisible(false);
+        }
+
         Label versusLabel = new Label("Versus");
         versusLabel.getStyleClass().add("heading");
 
-        Label playerScoresFormatLabel = new Label("Score:Lives");
-        playerScoresFormatLabel.getStyleClass().add("heading");
+        Label playerScoresFormatLabel = new Label("<Score>:<Lives>");
+        playerScoresFormatLabel.getStyleClass().add("channelItem");
 
         VBox playerScoresVBox = new VBox();
         playerScoresVBox.setAlignment(Pos.CENTER);
@@ -122,8 +247,8 @@ public class MultiplayerScene extends BaseScene {
         Label incomingLabel = new Label("Incoming");
         incomingLabel.getStyleClass().add("heading");
 
-        PieceBoard currentPieceBoard = new PieceBoard(3, 3, 132, 132, true);
-        PieceBoard nextPieceBoard = new PieceBoard(3, 3, 80, 80, false);
+        PieceBoard currentPieceBoard = new PieceBoard(3, 3, 100, 100, true);
+        PieceBoard nextPieceBoard = new PieceBoard(3, 3, 60, 60, false);
 
         game.setNextPieceListener(((currentGamePiece, nextGamePiece) -> {
             currentPieceBoard.displayPiece(currentGamePiece);
@@ -132,8 +257,11 @@ public class MultiplayerScene extends BaseScene {
 
         game.setOnLineClear(board::fadeOut);
 
-        VBox rightBar = new VBox(versusLabel, playerScoresFormatLabel, playerScoresVBox, incomingLabel, currentPieceBoard, nextPieceBoard);
-        rightBar.setSpacing(10);
+        rightBar.getChildren().addAll(versusLabel, playerScoresFormatLabel, playerScoresVBox,
+                                        incomingLabel, currentPieceBoard, nextPieceBoard);
+
+        rightBar.setSpacing(5);
+
         rightBar.setAlignment(Pos.CENTER);
 
         Bindings.bindBidirectional(actualScore.textProperty(), game.getUserScore(), new NumberStringConverter());
@@ -141,7 +269,7 @@ public class MultiplayerScene extends BaseScene {
 
         actualLives.textProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue.equals("-1")) {
-                gameWindow.startScores(game);
+                gameWindow.startMultiplayerScores(playerScoresHashMap);
                 endGame();
             }
         });
@@ -189,18 +317,19 @@ public class MultiplayerScene extends BaseScene {
         chatVBox.setAlignment(Pos.CENTER);
 
         VBox tempVBox = new VBox(inGameChatLabel, chatVBox);
-        tempVBox.setSpacing(10);
+        tempVBox.setSpacing(5);
         tempVBox.setAlignment(Pos.CENTER);
 
-        VBox timerVBox = new VBox(tempVBox, rectangle);
-        timerVBox.setSpacing(10);
+        boardAndChatVBox.getChildren().add(tempVBox);
+        boardAndChatVBox.setAlignment(Pos.CENTER);
+
+        VBox timerVBox = new VBox(rectangle);
+        timerVBox.setSpacing(5);
 
         mainPane.setTop(topBar);
         mainPane.setRight(rightBar);
         mainPane.setBottom(timerVBox);
 
-        // Set what function is executed when a block, the main GameBoard, or the two PieceBoards
-        // are clicked
         board.setOnBlockClick(this::blockClicked);
         board.setOnRightClick(this::GameBoardClicked);
         currentPieceBoard.setOnRightClick(this::GameBoardClicked);
@@ -239,11 +368,18 @@ public class MultiplayerScene extends BaseScene {
 
                         fade.play();
                         index++;
+
+                        if (!score.endsWith("DEAD")) {
+                            int tempScore = Integer.valueOf(score.split(":")[1]);
+                            String tempPlayerName = score.split(":")[0];
+
+                            if (tempScore > playerScoresHashMap.get(tempPlayerName)) {
+                                playerScoresHashMap.put(tempPlayerName, tempScore);
+                            }
+                        }
+
                     }
                 });
-            } else if (message.startsWith("NICK ")) {
-                // Change heading above score
-                scoreHeading.setText(message.substring(5));
             } else if (message.startsWith("MSG ")) {
                 Multimedia.switchAudioFile("message.wav");
                 String messageSenderName = message.split(":")[0];
@@ -252,6 +388,18 @@ public class MultiplayerScene extends BaseScene {
                     messageInputVisible.set(false);
                     inGameChatLabel.setText("<" + messageSenderName + "> " + messageText);
                 });
+            } else if (message.startsWith("BOARD ")) {
+                    message = message.substring(6);
+                    String playerWhoseBoardItIs = message.split(":")[0];
+                    String actualBoard = message.split(":")[1];
+                    playerBoards.put(playerWhoseBoardItIs, actualBoard);
+
+                    // If the current board is the same as playerWhoseBoardItIs, then update the board
+                    if (playerWhoseBoardItIs.equals(otherPlayerBoardHeading.getText())) {
+                        Platform.runLater(() -> {
+                            otherPlayerBoard.updateBoard(playerBoards.get(playerWhoseBoardItIs));
+                        });
+                    }
             }
         });
 
@@ -260,28 +408,7 @@ public class MultiplayerScene extends BaseScene {
         // user plays a piece, and the playerScoresVBox will remain empty.
         // Therefore, these commands are sent to ensure that a NICK response and a SCORES response is returned by
         // the server to make sure that those UI components aren't empty at the start of the game.
-        gameWindow.getCommunicator().send("NICK");
         gameWindow.getCommunicator().send("SCORES");
-    }
-
-    private int getHighScore() {
-        // Get top high score
-        var inputStream = ScoresScene.class.getResourceAsStream("/scores.txt");
-
-        if (inputStream == null) {
-            throw new RuntimeException("File scores.txt not found in the resources directory");
-        }
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line = br.readLine();
-            if (line != null) {
-                return Integer.valueOf(line.split(":")[1]);
-            } else {
-                return 0;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
     }
 
@@ -319,7 +446,7 @@ public class MultiplayerScene extends BaseScene {
      * Cleanup code before the game is ended
      */
     public void endGame() {
-        //logger.info("Ending the game");
+        logger.info("Ending the game");
         gameWindow.getCommunicator().send("DIE");
         game.gameTimerShutdown();
         game = null;

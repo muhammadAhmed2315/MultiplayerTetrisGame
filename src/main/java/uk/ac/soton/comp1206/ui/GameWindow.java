@@ -1,5 +1,6 @@
 package uk.ac.soton.comp1206.ui;
 
+import java.util.Map;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -11,7 +12,14 @@ import org.apache.logging.log4j.Logger;
 import uk.ac.soton.comp1206.App;
 import uk.ac.soton.comp1206.game.Game;
 import uk.ac.soton.comp1206.network.Communicator;
-import uk.ac.soton.comp1206.scene.*;
+import uk.ac.soton.comp1206.scene.BaseScene;
+import uk.ac.soton.comp1206.scene.ChallengeScene;
+import uk.ac.soton.comp1206.scene.InstructionsScene;
+import uk.ac.soton.comp1206.scene.LobbyScene;
+import uk.ac.soton.comp1206.scene.MenuScene;
+import uk.ac.soton.comp1206.scene.MultiplayerScene;
+import uk.ac.soton.comp1206.scene.ScoresScene;
+import uk.ac.soton.comp1206.scene.StartupScene;
 
 /**
  * The GameWindow is the single window for the game where everything takes place. To move between screens in the game,
@@ -60,14 +68,14 @@ public class GameWindow {
         communicator = new Communicator("ws://ofb-labs.soton.ac.uk:9700");
 
         //Go to menu
-        startMenu();
+        startStartupScene();
     }
 
     /**
      * Setup the font and any other resources we need
      */
     private void setupResources() {
-        //logger.info("Loading resources");
+        logger.info("Loading resources");
 
         //We need to load fonts here due to the Font loader bug with spaces in URLs in the CSS files
         Font.loadFont(getClass().getResourceAsStream("/style/Orbitron-Regular.ttf"),32);
@@ -78,9 +86,7 @@ public class GameWindow {
     /**
      * Display the main menu
      */
-    public void startMenu() {
-        loadScene(new MenuScene(this));
-    }
+    public void startMenu() { loadScene(new MenuScene(this)); }
 
     /**
      * Display the single player challenge
@@ -93,19 +99,31 @@ public class GameWindow {
     public void startInstructions() { loadScene(new InstructionsScene(this)); }
 
     /**
-     * Display the scores scene
+     * Display the local scores scene
      */
-    public void startScores(Game game) { loadScene(new ScoresScene(this, game)); };
+    public void startLocalScores(Game game) { loadScene(new ScoresScene(this, game)); }
+
+    /**
+     * Display the multiplayer scores scene
+     */
+    public void startMultiplayerScores(Map<String, Integer> multiplayerScores) {
+        loadScene(new ScoresScene(this, multiplayerScores));
+    }
 
     /**
      * Display the lobby scene
      */
-    public void startLobby() { loadScene(new LobbyScene(this)); };
+    public void startLobby() { loadScene(new LobbyScene(this)); }
 
     /**
      * Display the multiplayer game
      */
     public void startMultiplayerGame() { loadScene(new MultiplayerScene(this)); }
+
+    /**
+     * Display the startup animation
+     */
+    public void startStartupScene() { loadScene(new StartupScene(this)); }
 
     /**
      * Set up the default settings for the stage itself (the window), such as the title and minimum width and height.
@@ -150,7 +168,7 @@ public class GameWindow {
      * When switching scenes, perform any cleanup needed, such as removing previous listeners
      */
     public void cleanup() {
-        //logger.info("Clearing up previous scene");
+        logger.info("Clearing up previous scene");
         communicator.clearListeners();
     }
 
