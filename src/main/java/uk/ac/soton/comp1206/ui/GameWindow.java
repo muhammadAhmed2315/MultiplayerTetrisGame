@@ -100,11 +100,13 @@ public class GameWindow {
 
     /**
      * Display the local scores scene
+     * @param game Final local game state
      */
     public void startLocalScores(Game game) { loadScene(new ScoresScene(this, game)); }
 
     /**
      * Display the multiplayer scores scene
+     * @param multiplayerScores Scores of each player who participated in the multiplayer game
      */
     public void startMultiplayerScores(Map<String, Integer> multiplayerScores) {
         loadScene(new ScoresScene(this, multiplayerScores));

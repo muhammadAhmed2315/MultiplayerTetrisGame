@@ -36,6 +36,10 @@ import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
 
+/**
+ * Shows local (or multiplayer) and online scores after a game has finished, as well as ask the
+ * player for their username (if necessary).
+ */
 public class ScoresScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
@@ -347,6 +351,7 @@ public class ScoresScene extends BaseScene {
     /**
      * Shows the ScoresList component at the bottom of the screen
      * @param contentVBox VBox to add components to
+     * @param highScoresHeading Heading to display in contentVBox
      * @param imageView image to show on top of the screen
      * @param gameOverHeading label that needs to be displayed
      */

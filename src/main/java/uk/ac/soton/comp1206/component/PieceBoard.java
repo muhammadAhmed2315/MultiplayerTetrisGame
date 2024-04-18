@@ -12,6 +12,15 @@ public class PieceBoard extends GameBoard {
      */
     private boolean hover;
 
+    /**
+     * Constructs a PieceBoard with specified dimensions and hover effect settings.
+     *
+     * @param cols the number of columns in the PieceBoard
+     * @param rows the number of rows in the PieceBoard
+     * @param width the width of each block in the PieceBoard
+     * @param height the height of each block in the PieceBoard
+     * @param hover a boolean value that determines if the hover effect is enabled on the PieceBoard
+     */
     public PieceBoard(int cols, int rows, double width, double height, boolean hover) {
         super(cols, rows, width, height);
         this.hover = hover;

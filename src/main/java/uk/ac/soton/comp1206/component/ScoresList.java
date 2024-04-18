@@ -26,12 +26,20 @@ public class ScoresList extends VBox {
      */
     private final SimpleListProperty<Pair<String, Integer>> scores = new SimpleListProperty<>();
 
+    /**
+     * Constructs a ScoresList component which displays a list of high scores.
+     * Initializes the component with a list of scores and sets up a listener to update the display
+     * whenever the scores list changes.
+     * The component is aligned to the center of its parent.
+     *
+     * @param scores the observable list of pairs, each containing a player name and their
+     *               corresponding score, to be displayed
+     */
+
     public ScoresList(ObservableList<Pair<String, Integer>> scores) {
         this.scores.set(scores);
         this.scores.addListener((ListChangeListener<Pair<String, Integer>>) change -> {
-            Platform.runLater(() -> {
-                updateDisplay();
-            });
+            Platform.runLater(this::updateDisplay);
         });
         setAlignment(Pos.CENTER);
     }
@@ -66,7 +74,7 @@ public class ScoresList extends VBox {
 
     /**
      * Returns the scores list
-     * @return scores list
+     * @return Scores field
      */
     public SimpleListProperty<Pair<String, Integer>> scoresProperty() {
         return this.scores;

@@ -1,3 +1,8 @@
+/**
+ * Defines the module for the uk.ac.soton.comp1206 project. This module uses JavaFX for its user
+ * interface, the Java Scripting API for scripting capabilities, and additional libraries for
+ * enhanced functionality.
+ */
 module uk.ac.soton.comp1206 {
     requires java.scripting;
     requires javafx.controls;

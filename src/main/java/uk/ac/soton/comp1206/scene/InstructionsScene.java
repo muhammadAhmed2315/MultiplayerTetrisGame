@@ -16,6 +16,9 @@ import uk.ac.soton.comp1206.game.GamePiece;
 import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 
+/**
+ * Scene which shows the user how to play the game
+ */
 public class InstructionsScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);

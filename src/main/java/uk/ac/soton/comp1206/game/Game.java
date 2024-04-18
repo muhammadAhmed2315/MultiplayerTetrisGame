@@ -254,7 +254,6 @@ public class Game {
 
     /**
      * Updates currentPiece to a new randomly generated piece
-     * @return updated currentPiece
      */
     public void nextPiece() {
         currentPiece = nextPiece;

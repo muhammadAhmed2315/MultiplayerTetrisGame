@@ -25,6 +25,10 @@ import uk.ac.soton.comp1206.ui.GamePane;
 import uk.ac.soton.comp1206.ui.GameWindow;
 import uk.ac.soton.comp1206.utility.Multimedia;
 
+/**
+ * Scene which allows the user to browse the list of available channels, join or create a channel,
+ * message other players in the same channel, and start or leave a channel
+ */
 public class LobbyScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);

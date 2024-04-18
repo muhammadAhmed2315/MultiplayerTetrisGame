@@ -86,8 +86,9 @@ public class MultiplayerGame extends Game {
 
     /**
      * Create a new game with the specified rows and columns. Creates a corresponding grid model.
-     * @param cols number of columns
-     * @param rows number of rows
+     * @param cols Number of columns
+     * @param rows Number of rows
+     * @param communicator Communicator to talk to the server
      */
     public MultiplayerGame(int cols, int rows, Communicator communicator) {
         super(cols, rows);
@@ -268,7 +269,6 @@ public class MultiplayerGame extends Game {
 
     /**
      * Updates currentPiece to a new randomly generated piece
-     * @return updated currentPiece
      */
     public void nextPiece() {
         currentPiece = nextPiece;

@@ -47,7 +47,15 @@ import uk.ac.soton.comp1206.utility.Multimedia;
 public class MultiplayerScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
+
+    /**
+     * The game logic and state manager for the multiplayer mode.
+     */
     protected MultiplayerGame game;
+
+    /**
+     * The visual representation of the user's game grid.
+     */
     protected GameBoard board;
 
     /**

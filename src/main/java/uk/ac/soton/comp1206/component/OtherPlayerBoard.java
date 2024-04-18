@@ -1,7 +1,9 @@
 package uk.ac.soton.comp1206.component;
 
+/**
+ * Used to show another player's board in the multiplayer game.
+ */
 public class OtherPlayerBoard extends GameBoard {
-
     /**
      * Create a new GameBoard with its own internal grid, specifying the number of columns and rows,
      * along with the visual width and height.

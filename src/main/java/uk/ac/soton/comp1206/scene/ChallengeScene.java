@@ -41,7 +41,15 @@ import uk.ac.soton.comp1206.utility.Multimedia;
 public class ChallengeScene extends BaseScene {
 
     private static final Logger logger = LogManager.getLogger(MenuScene.class);
+
+    /**
+     * The game logic and state manager for the challenge mode.
+     */
     protected Game game;
+
+    /**
+     * The visual representation of the game grid.
+     */
     protected GameBoard board;
 
     /**
