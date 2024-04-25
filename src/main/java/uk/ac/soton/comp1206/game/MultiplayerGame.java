@@ -46,7 +46,7 @@ public class MultiplayerGame extends Game {
     /**
      * User score
      */
-    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(300);
+    private final SimpleIntegerProperty userScore = new SimpleIntegerProperty(0);
 
     /**
      * Score multiplier

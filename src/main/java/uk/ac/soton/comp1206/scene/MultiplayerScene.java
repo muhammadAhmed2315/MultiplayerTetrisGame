@@ -70,7 +70,7 @@ public class MultiplayerScene extends BaseScene {
     private int playerIndex = 0;
 
     /**
-     * List containing all of the players playing the game
+     * List containing all the players playing the game
      */
     List<String> playerBoardsKeys;
 
@@ -136,7 +136,6 @@ public class MultiplayerScene extends BaseScene {
 
                     // Create list of users
                     playerBoardsKeys = new ArrayList<>(playerBoards.keySet());
-                    counter.getAndIncrement();
                 } else {
                     // Assign just one player (the current user) an empty grid
                     playerBoards.put(message, emptyFlattenedGrid);
@@ -144,8 +143,8 @@ public class MultiplayerScene extends BaseScene {
                     // Create list of users
                     playerScoresHashMap.put(message, 0);
                     playerBoardsKeys = new ArrayList<>(playerBoards.keySet());
-                    counter.getAndIncrement();
                 }
+                counter.getAndIncrement();
             } else if (message.startsWith("NICK ")) {
                 // Set the playerNickname field to the player's nickname
                 playerNickname = message.substring(5);
@@ -207,7 +206,7 @@ public class MultiplayerScene extends BaseScene {
         /*
           Bar on the right hand side containing a VBox that contains: a representation of another
           player's board (user can switch which player's board is being shown), player scoreboard,
-          current piece, and next piece
+          current piece, and next piece.
          */
         Label otherPlayerBoardHeading;
         OtherPlayerBoard otherPlayerBoard;
@@ -356,6 +355,7 @@ public class MultiplayerScene extends BaseScene {
 
         // Handle receiving scores from the server
         gameWindow.getCommunicator().addListener((message) -> {
+            logger.info(message);
             if (message.startsWith("SCORES ")) {
                 // Update scoreboard
                 message = message.substring(7);
@@ -404,9 +404,7 @@ public class MultiplayerScene extends BaseScene {
 
                     // If the current board is the same as playerWhoseBoardItIs, then update the board
                     if (playerWhoseBoardItIs.equals(otherPlayerBoardHeading.getText())) {
-                        Platform.runLater(() -> {
-                            otherPlayerBoard.updateBoard(playerBoards.get(playerWhoseBoardItIs));
-                        });
+                        otherPlayerBoard.updateBoard(playerBoards.get(playerWhoseBoardItIs));
                     }
             }
         });
