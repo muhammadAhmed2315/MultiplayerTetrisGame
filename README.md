@@ -37,6 +37,12 @@ The game connects to a multiplayer server to enable:
 - Live score updates
 - In-game chat
 
+## Gameplay Video
+
+Want to see TetrECS in action? Check out the gameplay video on YouTube:
+
+[![TetrECS Gameplay](https://img.youtube.com/vi/https://www.youtube.com/watch?v=NzJ0YWKtyLM/0.jpg)](https://www.youtube.com/watch?v=https://www.youtube.com/watch?v=NzJ0YWKtyLM)
+
 ## Acknowledgments
 
 This project was developed as coursework for COMP1206 Programming 2 at the University of Southampton. Base game concept provided by course instructors.
