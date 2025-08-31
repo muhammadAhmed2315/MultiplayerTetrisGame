@@ -9,6 +9,12 @@ TetrECS is a fast-paced block placement game developed as coursework for the COM
 - Local and online high score tracking
 - Multiplayer lobby and gameplay
 
+## Gameplay Video
+
+Want to see TetrECS in action? Check out the gameplay video on YouTube:
+
+[https://www.youtube.com/watch?v=NzJ0YWKtyLM](https://www.youtube.com/watch?v=NzJ0YWKtyLM)
+
 ## Technologies Used
 
 - Java
@@ -36,12 +42,6 @@ The game connects to a multiplayer server to enable:
 - Synchronized piece generation
 - Live score updates
 - In-game chat
-
-## Gameplay Video
-
-Want to see TetrECS in action? Check out the gameplay video on YouTube:
-
-[https://www.youtube.com/watch?v=NzJ0YWKtyLM](https://www.youtube.com/watch?v=NzJ0YWKtyLM)
 
 ## Acknowledgments
 
