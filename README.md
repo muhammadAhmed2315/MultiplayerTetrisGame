@@ -2,18 +2,18 @@
 
 TetrECS is a fast-paced block placement game developed as coursework for the COMP1206 Programming 2 module at the University of Southampton.
 
+## Gameplay Video
+
+Want to see TetrECS in action? Check out the gameplay video on YouTube:
+
+[https://www.youtube.com/watch?v=NzJ0YWKtyLM](https://www.youtube.com/watch?v=NzJ0YWKtyLM)
+
 ## Key Features
 
 - JavaFX-based user interface
 - Custom UI components and animations  
 - Local and online high score tracking
 - Multiplayer lobby and gameplay
-
-## Gameplay Video
-
-Want to see TetrECS in action? Check out the gameplay video on YouTube:
-
-[https://www.youtube.com/watch?v=NzJ0YWKtyLM](https://www.youtube.com/watch?v=NzJ0YWKtyLM)
 
 ## Technologies Used
 
